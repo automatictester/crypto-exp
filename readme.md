@@ -451,13 +451,21 @@ RSA keys:
   private key)
 
 Key generation:
-- Choose 2 prime numbers p and q matching certain criteria
+- For a given key size, choose 2 random strong prime numbers p and q (matching certain criteria) 
+  of bit length equal to key size / 2 each
+- Verify p != q
 - Calculate n = p * q
+- Verify bit lenght of n == key size. This should be the case if p and q are strong primes
 - Calculate phi ( n ) = ( p - 1 ) * ( q - 1 )
-- Calculate public exponent e, where e is a prime number such that 1 < e < phi ( n )
-- Calculate private exponent d = xgcd ( e, phi ) - xgcd is extended greatest common divisor
+- Use public exponent e = 65537. If not, calculate prime number e, such that 1 < e < phi ( n )
+- Calculate private exponent d = xgcd ( e, phi ) \[ 1 ]
+  - Function xgcd, sometimes called egcd, is extended greatest common divisor
+  - Depending on the implementation, sometimes d calculated this way may be negative.
+    In such case use d = d + phi instead 
+  - Python's Crypto.Util.number.inverse(e, phi) is free from this inconvenience
+  - Verify d is less than but close to n
 - Optionally verify ( e * d ) mod phi = 1
-- Please note phi is the only calculated value which isn't persisted in private key
+- Please note phi is the only calculated value which isn't persisted in a private key
 
 Private key:
 - Modulus n

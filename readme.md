@@ -133,7 +133,8 @@ Insecure:
 Keying options:
 - K<sub>1</sub> ≠ K<sub>2</sub> ≠ K<sub>3</sub> - 3x 56 bit key gives 168 bits total key length, however only 112 bits
   of security due to meet-in-the-middle attacks
-- K<sub>1</sub> ≠ K<sub>2</sub>, K<sub>1</sub> = K<sub>3</sub> - 2x 56 bits gives 112 bits total key length
+- K<sub>1</sub> ≠ K<sub>2</sub>, K<sub>1</sub> = K<sub>3</sub> - 2x 56 bits gives 112 bits total key length, 
+  however only <= 80 bits of security
 - K<sub>1</sub> = K<sub>2</sub> = K<sub>3</sub> - same as original DES, only for compatibility reasons
 
 ### GOST
@@ -453,7 +454,7 @@ RSA keys:
 Key generation:
 - For a given key size, choose 2 random strong prime numbers p and q (matching certain criteria) 
   of bit length equal to key size / 2 each
-- Verify p != q
+- Verify p ≠ q
 - Calculate n = p * q
 - Verify bit lenght of n == key size. This should be the case if p and q are strong primes
 - Calculate phi ( n ) = ( p - 1 ) * ( q - 1 )
@@ -541,6 +542,11 @@ RSA/DH vs symmetric vs EC strength:
 - 3072 bit RSA/DH = 128 bit symmetric = 256 bit EC
 - 7680 bit RSA/DH = 192 bit symmetric = 384 bit EC
 - 15360 bit RSA/DH = 256 bit symmetric = 512 bit EC
+
+### Symmetric Key Recommendations
+
+- Use keys giving at least 112 bit of security
+- Don't use the key to encrypt more than 2 <sup>block size / 2</sup> blocks
 
 ### (Perfect) Forward Secrecy
 

@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
+import javax.crypto.SecretKey;
 import javax.crypto.interfaces.DHPublicKey;
 import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.spec.GCMParameterSpec;
@@ -21,7 +22,7 @@ public class Party {
     private final String name;
     private KeyPair keyPair;
     private KeyAgreement keyAgreement;
-    private SecretKeySpec secretKey;
+    private SecretKey secretKey;
 
     // initial setup
 

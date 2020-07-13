@@ -536,17 +536,25 @@ Popular curves:
 
 ### Key Strength Comparison
 
-RSA/DH vs symmetric vs EC strength:
+RSA/DH vs symmetric vs EC strength, according to common understanding:
 - 1024 bit RSA/DH = 80 bit symmetric = 160 bit EC
 - 2048 bit RSA/DH = 112 bit symmetric = 224 bit EC
 - 3072 bit RSA/DH = 128 bit symmetric = 256 bit EC
 - 7680 bit RSA/DH = 192 bit symmetric = 384 bit EC
 - 15360 bit RSA/DH = 256 bit symmetric = 512 bit EC
 
-### Symmetric Key Recommendations
-
+Key recommendations:
 - Use keys giving at least 112 bit of security
 - Don't use the key to encrypt more than 2 <sup>block size / 2</sup> blocks
+- CNSA Suite, successor to NSA Suite B, includes the following:
+  - AES-256
+  - ECDSA 384 bit
+  - ECDH 384 bit
+  - SHA-384
+  - DH 3072 bit
+  - RSA 3072 bit
+  - All of the above match Top Secret requirements
+  - The list is clearly **not** in line with the common understanding
 
 ### (Perfect) Forward Secrecy
 

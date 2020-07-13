@@ -1,4 +1,4 @@
-package uk.co.automatictester.security.encode;
+package uk.co.automatictester.security.encoding;
 
 import lombok.extern.slf4j.Slf4j;
 import org.testng.annotations.DataProvider;

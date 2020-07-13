@@ -1,4 +1,4 @@
-package uk.co.automatictester.security.sign;
+package uk.co.automatictester.security.signing;
 
 import lombok.extern.slf4j.Slf4j;
 import org.testng.annotations.Test;

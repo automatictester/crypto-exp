@@ -1,4 +1,4 @@
-package uk.co.automatictester.security.encode;
+package uk.co.automatictester.security.encoding;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base32;

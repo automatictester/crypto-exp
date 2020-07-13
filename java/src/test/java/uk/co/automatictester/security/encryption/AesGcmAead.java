@@ -1,4 +1,4 @@
-package uk.co.automatictester.security.encrypt;
+package uk.co.automatictester.security.encryption;
 
 import lombok.extern.slf4j.Slf4j;
 import org.testng.annotations.Test;
@@ -16,39 +16,28 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @Slf4j
-public class Aead {
+public class AesGcmAead {
 
-    private static final int IV_LENGTH = 12;
-    private static final int AUTHENTICATION_TAG_BIT_LENGTH = 128;
-    private static final int IV_START_OFFSET = 0;
-    private static final SecretKey KEY;
-
-    static {
-        KeyGenerator keyGenerator;
-        try {
-            keyGenerator = KeyGenerator.getInstance("AES");
-            keyGenerator.init(256);
-            KEY = keyGenerator.generateKey();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private final int ivLength = 12;
+    private final int authenticationTagBitLength = 128;
+    private SecretKey key;
 
     @Test
     public void testAesGcm() throws Exception {
-        String input = "Lorem ipsum dolor sit amet";
-        String metadata = "metadata";
-        byte[] encrypted = encrypt(input.getBytes(), metadata.getBytes());
-        String decrypted = new String(decrypt(encrypted, metadata.getBytes()));
-        assertThat(decrypted, equalTo(input));
+        key = generateKey();
+        String plaintext = "Lorem ipsum dolor sit amet";
+        String associatedData = "metadata";
+        byte[] ciphertext = encrypt(plaintext.getBytes(), associatedData.getBytes());
+        String decrypted = new String(decrypt(ciphertext, associatedData.getBytes()));
+        assertThat(decrypted, equalTo(plaintext));
     }
 
     public byte[] encrypt(byte[] input, byte[] metadata) throws Exception {
         byte[] iv = getIv();
         Cipher cipher = getCipher();
-        GCMParameterSpec gcmParams = new GCMParameterSpec(AUTHENTICATION_TAG_BIT_LENGTH, iv);
+        GCMParameterSpec gcmParams = new GCMParameterSpec(authenticationTagBitLength, iv);
 
-        cipher.init(Cipher.ENCRYPT_MODE, KEY, gcmParams);
+        cipher.init(Cipher.ENCRYPT_MODE, key, gcmParams);
         cipher.updateAAD(metadata);
         byte[] encrypted = cipher.doFinal(input);
 
@@ -60,12 +49,13 @@ public class Aead {
 
     public byte[] decrypt(byte[] encrypted, byte[] metadata) throws Exception {
         Cipher cipher = getCipher();
+        int ivStartOffset = 0;
         GCMParameterSpec gcmParams =
-                new GCMParameterSpec(AUTHENTICATION_TAG_BIT_LENGTH, encrypted, IV_START_OFFSET, IV_LENGTH);
+                new GCMParameterSpec(authenticationTagBitLength, encrypted, ivStartOffset, ivLength);
 
-        cipher.init(Cipher.DECRYPT_MODE, KEY, gcmParams);
+        cipher.init(Cipher.DECRYPT_MODE, key, gcmParams);
         cipher.updateAAD(metadata);
-        return cipher.doFinal(encrypted, IV_LENGTH, encrypted.length - IV_LENGTH);
+        return cipher.doFinal(encrypted, ivLength, encrypted.length - ivLength);
     }
 
     private Cipher getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException {
@@ -73,8 +63,14 @@ public class Aead {
     }
 
     private byte[] getIv() {
-        byte[] iv = new byte[IV_LENGTH];
+        byte[] iv = new byte[ivLength];
         new SecureRandom().nextBytes(iv);
         return iv;
+    }
+
+    private SecretKey generateKey() throws NoSuchAlgorithmException {
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+        keyGenerator.init(256);
+        return keyGenerator.generateKey();
     }
 }

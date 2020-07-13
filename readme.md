@@ -165,24 +165,31 @@ Keying options:
 - Particular weakness - having a round key, attacker can get other round keys and main key
 
 AES, CBC and padding:
-- Defined by PKCS#7 and RFC 5652
-- Padding length: between 1 byte and 1 block
-- Padding depends on the number of empty bytes (not bits) in the last block:
-  - 1 - 1 (decimal) is added
-  - 2 - 2x 2 (decimal) is added
-  - ...
-  - 15 - 15x 15 (decimal) is added
-  - If there are no empty bytes in the last block, i.e. when P length is a multiple of block size, another block
-    filled with 16x 16 (decimal) is added. This is required to distibguish between last block ending with decimal 1
-    being a padding vs actial P
+- There are multiple paddings mechanisms available
+  - PKCS#5:
+    - Currently most popular, sometimes also referred to as PKCS#7 (RFC 5652) - these are synonyms today  
+    - Padding length: between 1 byte and 1 block
+    - Padding depends on the number of empty bytes (not bits) in the last block:
+      - 1 - 1 (decimal) is added
+      - 2 - 2x 2 (decimal) is added
+      - ...
+      - 15 - 15x 15 (decimal) is added
+      - If there are no empty bytes in the last block, i.e. when P length is a multiple of block size, another block
+        filled with 16x 16 (decimal) is added. This is required to distibguish between last block ending with decimal 1
+        being a padding vs part of actual plaintext
+  - Zero byte padding:
+    - Should not be used any more
+    - Appends zero bytes
+    - Dangerous if the original plaintext ends with zero byte
 - Problems with padding:
   - Increased ciphertext length
   - Prone to padding oracle attacks
 
 CTS:
 - Ciphertext stealing, an alternative to padding
-- Not prone to padding oracle attacks
+- Requires plaintext to be of at least block size length 
 - Less elegant, more complex (standard defines 3 possible implementations) and less popular
+- Not prone to padding oracle attacks
 
 ### Block Cipher Modes
 

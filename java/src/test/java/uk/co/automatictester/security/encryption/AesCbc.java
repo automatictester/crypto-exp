@@ -25,6 +25,7 @@ public class AesCbc {
         byte[] ciphertext = encrypt(plaintext.getBytes());
         String decrypted = new String(decrypt(ciphertext));
         assertThat(decrypted, equalTo(plaintext));
+        log.info("len(P): {}, len(C): {}", plaintext.length(), ciphertext.length);
     }
 
     public byte[] encrypt(byte[] input) throws Exception {

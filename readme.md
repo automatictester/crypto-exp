@@ -124,6 +124,7 @@ Insecure:
 - Based on Feistel network
 - Rounds: 16
 - Optimized for dedicated hardware, not modern CPUs
+- Introduced also the following modes of operations: ECB, CBC, CFB, OFB
 
 ### 3DES
 
@@ -189,6 +190,7 @@ CTS:
 - Ciphertext stealing, an alternative to padding
 - Requires plaintext to be of at least block size length 
 - Less elegant, more complex (standard defines 3 possible implementations) and less popular
+- Having said that, from developer point of view, if the library you are using supports it, it's just an option to use
 - Not prone to padding oracle attacks
 
 ### Block Cipher Modes
@@ -199,19 +201,22 @@ CTS:
 |CBC|C = E ( P ⊕ C<sub>i-1</sub> )|see <sup>1</sup> and <sup>2</sup>|
 |CFB|C = E ( C<sub>i-1</sub> ) ⊕ P|see <sup>1</sup>|
 |OFB|C<sub>0</sub> = E ( IV ) ⊕ P<br> C<sub>1</sub> = E ( E ( IV )<sub>0</sub> ) ⊕ P<br>...|see <sup>1</sup>|
-|CTR|C = E ( N + C ) ⊕ P|uses nonce and counter|
+|CTR|C = E ( N + C ) ⊕ P|uses nonce and counter, see <sup>3</sup>|
 
 <sup>1</sup> - in first iteration IV is used, as there is no C<sub>i-1</sub> yet 
 
 <sup>2</sup> - requires padding
 
-|Mode|Encryption parallelizable|Decryption parallelizable|Random access|
-|---|---|---|---|
-|ECB|yes|yes|yes|
-|CBC|no|yes|yes|
-|CFB|no|yes|yes|
-|OFB|no|no|no|
-|CTR|yes|yes|yes|
+<sup>3</sup> - amount of space to the counter determines how many blocks the cipher can process safely;
+  e.g. 8 bit counter only allows for 265 blocks
+
+|Mode|Encryption parallelizable|Decryption parallelizable|Random access|Requires padding|
+|---|---|---|---|---|
+|ECB|yes|yes|yes|yes|
+|CBC|no|yes|yes|yes|
+|CFB|no|yes|yes|no|
+|OFB|no|no|no|no|
+|CTR|yes|yes|yes|no|
 
 ### Stream ciphers
 
@@ -264,7 +269,7 @@ Example of Linear FSR:
   - Counter: 64 bits
 - 20 rounds, hence its name
 - Other variants: Salsa20/12, Salsa20/8, where 20 and 8 refer to number of rounds respectively
-- Improved version is called ChaCha
+- Improved version is called ChaCha, with most popular variant called ChaCha20
 
 ### Hash Functions
 
@@ -440,7 +445,7 @@ Operations:
   - SageMath's power_mod(x, e, n)
   - Python's pow(x, e, n)
 
-Encdyption with RSA-OAEP:
+Encryption with RSA-OAEP:
 - OEAP - Optimal Asymmetric Encryption Padding
 - More secure than plain RSA
 - Based on PRNG

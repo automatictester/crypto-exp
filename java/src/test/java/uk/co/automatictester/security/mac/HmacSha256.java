@@ -1,4 +1,4 @@
-package uk.co.automatictester.security.signing;
+package uk.co.automatictester.security.mac;
 
 import lombok.extern.slf4j.Slf4j;
 import org.testng.annotations.Test;
@@ -28,13 +28,14 @@ public class HmacSha256 {
 
     @Test
     public void testHmacSha256() throws NoSuchAlgorithmException, InvalidKeyException {
-        byte[] message = "Lorem ipsum dolor sit amet".getBytes();
+        String message = "Lorem ipsum dolor sit amet";
 
         Mac mac = Mac.getInstance(ALGORITHM);
         mac.init(KEY);
-        byte[] hmacSha256 = mac.doFinal(message);
+        mac.update(message.getBytes());
+        byte[] rawMac = mac.doFinal();
 
-        String base64encodedHmacSha265 = Base64.getEncoder().encodeToString(hmacSha256);
-        log.info(base64encodedHmacSha265);
+        String base64encodedMac = Base64.getEncoder().encodeToString(rawMac);
+        log.info(base64encodedMac);
     }
 }

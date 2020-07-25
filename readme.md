@@ -335,9 +335,16 @@ Family of 4 algorithms:
 - Based on Keccak algorithm (sponge function)
 - In contrary to older hash algorithms, not prone to length extension attacks
 
+Similarly to SHA-2, family of 4 algorithms:
+- SHA3-224
+- SHA3-256
+- SHA3-384
+- SHA3-512
+
 ### Keyed Hashing
 
 - To a degree similar to hash function, but MAC uses a secret key while hash function does not
+- Secret key is shared between party creating and validating MAC 
 - T = MAC ( K, M ), where T stands for tag
 - Benefits of MAC:
   - Integrity - without key, data cannot be changed in a way that attached tag remains valid

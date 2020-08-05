@@ -396,17 +396,25 @@ Authenticated Encryption with Associated Data (AEAD):
     - AES-GCM:
       - Most popular
       - EtM type
-      - Encryption is internally based on CTR, hence parallelisable both ways
+      - Based on CTR, hence parallelisable both ways
       - MAC calculation is not parallelisable
       - Entire computation is parallelisable, because MAC doesn't require entire C to start calculations
-      - Recommended IV length is 96 bits (12 bytes), although other lengths are technically possible
+      - Recommended IV length is 96 bits (12 bytes), although using arbitrary lengths is technically possible
       - Sensitive to IV reuse
       - GCM mode can work with any block cipher, but vast majority use it only in combination with AES
       - GCM stands for Galois Counter Mode
       - Produces tags of 128, 120, 112, 104 or 96 bits
       - Using tags below 128 bits is discouraged, because bit strenght reduction is worse than linear
       - Resulting variant of AES-GCM with AAD but blank P is called GMAC
-    - OCB:
+    - AES-CCM:
+      - CCM stands for Counter with CBC-MAC
+      - One of very few ciphers allowed in TLS 1.3 - alongside AES-GCM and ChaCha20-Poly1305
+      - MtE type
+      - Based on CTR
+    - AES-EAX:
+      - EtM type
+      - Based on CTR
+    - AES-OCB:
       - Offset Codebook
       - Older, faster and more simple than GCM
       - Requires a license, however since 2013 licenses are granted free of charge for non-military use

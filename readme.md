@@ -404,7 +404,7 @@ Authenticated Encryption with Associated Data (AEAD):
       - GCM mode can work with any block cipher, but vast majority use it only in combination with AES
       - GCM stands for Galois Counter Mode
       - Produces tags of 128, 120, 112, 104 or 96 bits
-      - Using tags below 128 bits is discouraged, because bit strenght reduction is worse than linear
+      - Using tags below 128 bits is discouraged, because bit strength reduction is worse than linear
       - Resulting variant of AES-GCM with AAD but blank P is called GMAC
     - AES-CCM:
       - CCM stands for Counter with CBC-MAC
@@ -424,6 +424,18 @@ Authenticated Encryption with Associated Data (AEAD):
       - Less sensitive to IV reuse
       - Almost as fast as pure AES-GCM
       - Cannot process streams - requires entire P to be encrypted to C
+
+### PBKDF
+
+- Takes secret input (password) as well as some public values (salt and iteration count) and returns symmetric key
+- K = PBKDF ( Password, Salt, IterationCount )
+- The more CPU- and memory-intensive, the better
+- Most common technique for creating PBKDF is PBKDF2
+- Salt:
+  - Random bytes
+  - Can be of any length but should be at least as long as the size of output produced by PRF the PBKDF is based on
+  - Prevents rainbow table attacks
+  
 
 ### Public Key Cryptography
 

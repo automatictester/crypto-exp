@@ -340,6 +340,8 @@ Similarly to SHA-2, family of 4 algorithms:
 - SHA3-256
 - SHA3-384
 - SHA3-512
+- SHAKE128
+- SHAKE256
 
 ### Keyed Hashing
 
@@ -448,6 +450,36 @@ Authenticated Encryption with Associated Data (AEAD):
 - Keys used in publik key cryptography are composed of a set of integers, not random sequence of bytes
 - Encrypt with recipient's public key to guarantee only he can decrypt it
 - Encrypt with your private key to prove authenticity
+
+### Digital Signatures
+
+- Use hybrid schemes with a signature calculated over hash of the data
+- Main variants:
+  - Deterministic, e.g. RSA
+  - Non-deterministic, e.g. typical variants of DSA
+- Signature strength depends on the strength of the component parts, i.e. public key algorithm, key size and 
+  message digest
+- Rule of thumb: make the public key algorithm the weakest part
+
+### DSA
+
+- Has multiple very different variants
+- Security of non-EC (including non-Ed) variants of DSA is based on difficulty of DLP (discreet logarithm problem) 
+  \- similarly to DH
+- Signature consists of R and S - two signed integers
+- Signatures may vary slightly in length, due to presence, or lack, of a sign byte
+- Random value K is needed in non-deterministic variants of DSA for signing only and needs to remain secret
+- Signing: Signature = Sign ( MessageDigest, RandomValue, PrivateKey )
+- Verification: ( True, False ) = Verify ( MessageDigest, Signature, PublicKey )
+- Security of DSA depends on randomness of K. Weak RNG can compromise security of DSA
+- Variants:
+  - DSA
+  - ECDSA - DSA over Elliptic Curve
+  - DDSA - Deterministic DSA
+  - ECDDSA - Deterministic DSA over Elliptic Curve
+  - EdDSA - DSA with Edwards Curves (deterministic only):
+    - Ed25519 - 128 bits of security, combined only with SHA-512
+    - Ed448 - 224 bits of security, combined only with SHAKE256
 
 ### RSA
 
@@ -573,14 +605,19 @@ Popular curves:
 - Curve25519 - designed for use with ECDH, fast, more trusted than NSA-designed curves, not part of NIST standard, 
   256 bit length
 
-### Key Strength Comparison
+### Security Strength Comparison
 
-RSA/DH vs symmetric vs EC strength, according to common understanding:
-- 1024 bit RSA/DH = 80 bit symmetric = 160 bit EC
-- 2048 bit RSA/DH = 112 bit symmetric = 224 bit EC
-- 3072 bit RSA/DH = 128 bit symmetric = 256 bit EC
-- 7680 bit RSA/DH = 192 bit symmetric = 384 bit EC
-- 15360 bit RSA/DH = 256 bit symmetric = 512 bit EC
+Comparable security strength (bits), according to common understanding:
+
+|Symmetric|RSA / DSA / DH|EC / SHA2 / SHA3|
+|---|---|---|
+|80|1024|160 <sup>1</sup>|
+|112|2048|224|
+|128|3072|256|
+|192|7680|384|
+|256|15360|512|
+
+<sup>1</sup> - SHA-1
 
 Key recommendations:
 - Use keys giving at least 112 bit of security

@@ -496,13 +496,19 @@ Security of RSA:
   - RSA signature takes hash of original message as an input
   - RSA key is used to encrypt symmetric key which is used to encrypt original message, not the message itself
 
-Operations:
+Generic operations:
 - Encryption / signature verification: y = x<sup>e</sup> mod n
 - Decryption / signing: x = y<sup>d</sup> mod n
 - Naive implementations based on power-then-modulo are slow. Optimised implementations are significantly faster, 
   and could include:
   - SageMath's power_mod(x, e, n)
   - Python's pow(x, e, n)
+
+Signing and signature verification:
+- Signing:
+  - S = PAD ( H ( M ) )<sup>d</sup> mod n
+- Verification:
+  - ( True, False ) = S<sup>e</sup> mod n
 
 Encryption with RSA-OAEP:
 - OEAP - Optimal Asymmetric Encryption Padding
@@ -513,6 +519,8 @@ Signing with RSA-PSS:
 - PPS - Probabilistic Signature Scheme
 - PSS is an equivalent of OAEP for signing
 - More secure than plain RSA
+- Non-deterministic and standardized as part of PKCS#1 v2.1, which is a replacement for deterministic PKCS#1 v1.5
+- No known attacks against PKCS#1 v1.5 exist, however PKCS#1 v2.1 has provable security which PKCS#1 v1.5 has not
 
 RSA keys:
 - Both public and private keys consist of sets of integers
@@ -551,7 +559,7 @@ Public key:
 - Modulus n
 - Public exponent e
 
-Why public exponent e is usually 65537 (0x10001):
+Why public exponent e is usually 65537 (hex value 0x10001):
 - Small valid values of public exponent e include: 3, 5, 17, 257 or 65537
 - Early RSA implementations without proper padding were vulnerable to small exponents
 - Large enough to be secure and significantly more secure than 3, small enough to be efficient in public key 

@@ -461,6 +461,11 @@ Authenticated Encryption with Associated Data (AEAD):
   message digest
 - Rule of thumb: make the public key algorithm the weakest part
 
+### Key Transport
+
+- Process of getting a symmetric key to another party after generating it locally
+- RSA and ElGamal are the only algorithms that directly offer this ability
+
 ### DSA
 
 - Has multiple very different variants
@@ -496,24 +501,19 @@ Security of RSA:
   - RSA signature takes hash of original message as an input
   - RSA key is used to encrypt symmetric key which is used to encrypt original message, not the message itself
 
-Generic operations:
-- Encryption / signature verification: y = x<sup>e</sup> mod n
-- Decryption / signing: x = y<sup>d</sup> mod n
-- Naive implementations based on power-then-modulo are slow. Optimised implementations are significantly faster, 
-  and could include:
-  - SageMath's power_mod(x, e, n)
-  - Python's pow(x, e, n)
-
-Signing and signature verification:
+Operations:
 - Signing:
   - S = PAD ( H ( M ) )<sup>d</sup> mod n
 - Verification:
   - ( True, False ) = S<sup>e</sup> mod n
-
-Encryption with RSA-OAEP:
-- OEAP - Optimal Asymmetric Encryption Padding
-- More secure than plain RSA
-- Based on PRNG
+- Encryption:
+  - C = PAD ( M )<sup>e</sup> mod n
+- Decryption:
+  - P = C<sup>d</sup> mod n
+- Naive implementations based on power-then-modulo are slow. Optimised implementations are significantly faster, 
+  and could include:
+  - SageMath's power_mod(x, e, n)
+  - Python's pow(x, e, n)
 
 Signing with RSA-PSS:
 - PPS - Probabilistic Signature Scheme
@@ -521,6 +521,12 @@ Signing with RSA-PSS:
 - More secure than plain RSA
 - Non-deterministic and standardized as part of PKCS#1 v2.1, which is a replacement for deterministic PKCS#1 v1.5
 - No known attacks against PKCS#1 v1.5 exist, however PKCS#1 v2.1 has provable security which PKCS#1 v1.5 has not
+
+Encryption with RSA-OAEP:
+- OAEP - Optimal Asymmetric Encryption Padding
+- More secure than plain RSA
+- Based on PRNG
+- Non-deterministic
 
 RSA keys:
 - Both public and private keys consist of sets of integers
@@ -617,15 +623,13 @@ Popular curves:
 
 Comparable security strength (bits), according to common understanding:
 
-|Symmetric|RSA / DSA / DH|EC / SHA2 / SHA3|
+|Symmetric|RSA / DSA / DH|EC / SHA|
 |---|---|---|
-|80|1024|160 <sup>1</sup>|
+|80|1024|160|
 |112|2048|224|
 |128|3072|256|
 |192|7680|384|
 |256|15360|512|
-
-<sup>1</sup> - SHA-1
 
 Key recommendations:
 - Use keys giving at least 112 bit of security
@@ -681,6 +685,13 @@ TLS 1.3 handshake:
 |3| |Server responds with Server Hello with selected cipher suite, public DH key, signature, MAC|
 |4|Client verifies certificate, signature, calculates DH shared secret, derives symmetric key, verifies MAC using that key| |
 
+### Post-Quantum Cryptography
+
+- Quantum computer would reduce symmetric key strength from 2<sup>n</sup> to 2<sup>n/2</sup>, e.g.
+  2<sup>128</sup> to 2<sup>64</sup>.
+- Symmetric cryptography can protect itself against quantum computers by doubling symmetric key lengths and hash sizes.
+- Quantum computer would break public key cryptography for good.
+
 ### Security Testing Checklist
 
 - Are keys of correct size?
@@ -689,10 +700,3 @@ TLS 1.3 handshake:
 - Are PRNGs suitable for use in cryptography?
 - Are DH shared secrets used as symmetric keys without KFD?
 - Are calculated digests of correct type (digest vs hexdigest)?
-
-### Post-Quantum Cryptography
-
-- Quantum computer would reduce symmetric key strength from 2<sup>n</sup> to 2<sup>n/2</sup>, e.g.
-  2<sup>128</sup> to 2<sup>64</sup>.
-- Symmetric cryptography can protect itself against quantum computers by doubling symmetric key lengths and hash sizes.
-- Quantum computer would break public key cryptography for good.

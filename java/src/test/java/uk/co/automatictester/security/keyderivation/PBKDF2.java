@@ -1,4 +1,4 @@
-package uk.co.automatictester.security.key.derivation;
+package uk.co.automatictester.security.keyderivation;
 
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;

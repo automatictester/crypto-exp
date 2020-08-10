@@ -1,4 +1,4 @@
-package uk.co.automatictester.security.key.exchange;
+package uk.co.automatictester.security.keyexchange;
 
 import lombok.extern.slf4j.Slf4j;
 

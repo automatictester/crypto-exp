@@ -1,12 +1,12 @@
 package uk.co.automatictester.security.keyderivation;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Base32;
 import org.bouncycastle.crypto.DerivationParameters;
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
+import org.bouncycastle.util.encoders.Hex;
 import org.testng.annotations.Test;
 
 import javax.crypto.KeyGenerator;
@@ -28,10 +28,10 @@ public class HKDF {
         byte[] okm1 = deriveKey(ikm, salt, info, lenght);
         byte[] okm2 = deriveKey(ikm, salt, info, lenght);
 
-        String base32okm1 = new Base32().encodeAsString(okm1);
-        String base32okm2 = new Base32().encodeAsString(okm2);
-        log.info("{}", base32okm1);
-        assertThat(base32okm1, equalTo(base32okm2));
+        String hexOkm1 = Hex.toHexString(okm1);
+        String hexOkm2 = Hex.toHexString(okm2);
+        log.info("{}", hexOkm1);
+        assertThat(hexOkm1, equalTo(hexOkm2));
     }
 
     private byte[] deriveKey(byte[] ikm, byte[] salt, byte[] info, int length) {

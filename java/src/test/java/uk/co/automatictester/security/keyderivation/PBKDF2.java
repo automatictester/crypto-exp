@@ -2,6 +2,7 @@ package uk.co.automatictester.security.keyderivation;
 
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.encoders.Hex;
 import org.testng.annotations.Test;
 
 import javax.crypto.SecretKeyFactory;
@@ -9,7 +10,6 @@ import javax.crypto.spec.PBEKeySpec;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Base64;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -29,10 +29,10 @@ public class PBKDF2 {
         PBEKeySpec keySpec = new PBEKeySpec(password, salt, iterationCount, keyLength);
 
         byte[] key1 = keyFactory.generateSecret(keySpec).getEncoded();
-        log.info("Key 1: {}", Base64.getEncoder().encodeToString(key1));
+        log.info("Key 1: {}", Hex.toHexString(key1));
 
         byte[] key2 = keyFactory.generateSecret(keySpec).getEncoded();
-        log.info("Key 2: {}", Base64.getEncoder().encodeToString(key2));
+        log.info("Key 2: {}", Hex.toHexString(key2));
 
         assertThat(key1, is(equalTo(key2)));
     }

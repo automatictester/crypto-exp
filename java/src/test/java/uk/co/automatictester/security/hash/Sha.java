@@ -2,12 +2,12 @@ package uk.co.automatictester.security.hash;
 
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.encoders.Hex;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 
 @Slf4j
 public class Sha {
@@ -33,8 +33,8 @@ public class Sha {
         MessageDigest digest = MessageDigest.getInstance(hash, new BouncyCastleProvider());
         digest.update(plaintext.getBytes());
         byte[] rawDigest = digest.digest();
-        String base64encodedDigest = Base64.getEncoder().encodeToString(rawDigest);
+        String hexDigest = Hex.toHexString(rawDigest);
 
-        log.info("Hash: {}, length: {}, Base64-encoded digest: {}", hash, rawDigest.length, base64encodedDigest);
+        log.info("Hash: {}, length: {}, Hex digest: {}", hash, rawDigest.length, hexDigest);
     }
 }

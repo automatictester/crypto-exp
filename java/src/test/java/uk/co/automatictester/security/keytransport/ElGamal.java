@@ -2,12 +2,12 @@ package uk.co.automatictester.security.keytransport;
 
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.encoders.Hex;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import javax.crypto.*;
 import java.security.*;
-import java.util.Base64;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -41,7 +41,7 @@ public class ElGamal {
         String wrappedKeyAlgorithm = symmetricKey.getAlgorithm();
         SecretKey unwrappedKey = unwrapKey(variant, wrappedKey, wrappedKeyAlgorithm, privateKey);
         assertThat(symmetricKey, is(equalTo(unwrappedKey)));
-        log.info("Length: {}, Base64: {}", wrappedKey.length, Base64.getEncoder().encodeToString(wrappedKey));
+        log.info("Length: {}, Hex: {}", wrappedKey.length, Hex.toHexString(wrappedKey));
     }
 
     private SecretKey unwrapKey(String variant, byte[] wrappedKey, String wrappedKeyAlgorithm, PrivateKey privateKey)

@@ -2,12 +2,12 @@ package uk.co.automatictester.security.signature;
 
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.encoders.Hex;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.security.*;
 import java.security.spec.ECGenParameterSpec;
-import java.util.Base64;
 
 import static org.testng.Assert.assertTrue;
 
@@ -39,7 +39,7 @@ public class ECDSA {
         byte[] signature = generateSignature(variant, plaintext, privateKey);
         boolean signatureVerificationResult = verifySignature(variant, plaintext, signature, publicKey);
         assertTrue(signatureVerificationResult);
-        log.info("Length: {}, Base64: {}", signature.length, Base64.getEncoder().encodeToString(signature));
+        log.info("Length: {}, Hex: {}", signature.length, Hex.toHexString(signature));
     }
 
     private boolean verifySignature(String variant, byte[] plaintext, byte[] signatureToVerify, PublicKey publicKey)

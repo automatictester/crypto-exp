@@ -2,6 +2,7 @@ package uk.co.automatictester.security.mac;
 
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.encoders.Hex;
 import org.testng.annotations.Test;
 
 import javax.crypto.KeyGenerator;
@@ -9,7 +10,6 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 
 @Slf4j
 public class AesCmac {
@@ -35,7 +35,7 @@ public class AesCmac {
         mac.update(message.getBytes());
         byte[] rawMac = mac.doFinal();
 
-        String base64encodedMac = Base64.getEncoder().encodeToString(rawMac);
-        log.info(base64encodedMac);
+        String hexMac = Hex.toHexString(rawMac);
+        log.info(hexMac);
     }
 }

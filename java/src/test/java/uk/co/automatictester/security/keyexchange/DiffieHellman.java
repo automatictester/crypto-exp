@@ -1,6 +1,7 @@
 package uk.co.automatictester.security.keyexchange;
 
 import lombok.extern.slf4j.Slf4j;
+import org.bouncycastle.util.encoders.Hex;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -59,7 +60,7 @@ public class DiffieHellman {
     private byte[] getIv() {
         byte[] iv = new byte[12];
         new SecureRandom().nextBytes(iv);
-        log.debug("Initialization vector: {}", iv);
+        log.debug("Initialization vector: {}", Hex.toHexString(iv));
         return iv;
     }
 }

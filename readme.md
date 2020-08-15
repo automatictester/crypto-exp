@@ -685,6 +685,47 @@ TLS 1.3 handshake:
 |3| |Server responds with Server Hello with selected cipher suite, public DH key, signature, MAC|
 |4|Client verifies certificate, signature, calculates DH shared secret, derives symmetric key, verifies MAC using that key| |
 
+### X.509
+
+Certificates:
+- X.509 is a standard defining the format of public key certificates
+- Certificate levels:
+  - Root certificate:
+    - Self-signed
+    - Represent a CA
+  - Intermediate certificate:
+    - Signed by CA
+    - Represent a CA
+  - End-entity certificate:
+    - Signed by CA
+    - Represent the end of teh certificate chain
+- Certificate versions:
+  - v1 - in use
+  - v2 - very rare
+  - v3 - most popular, introduced certificate extensions
+- Trust anchor:
+  - Authoritative entity for which trust is assumed and not derived
+  - Typical example is a root certificate
+
+Certificate Revocation Lists:
+- Allow the issuer to withdraw its signature from a certificate
+- Through the use of InvalidityDate extension, it is possible to revoke a certificate with past date
+- Obtaining CRLs:
+  - Issuers provide URL from which a CRL can be downloaded
+  - Online Certificate Status Protocol:
+    - Details can be included in the CRL Distribution Point certificate extension
+    - Client gets server certificate, then checks revocation by calling OCSP responder
+    - Solves one problem, but creates another - clients need to broadcast their traffic habits to CAs
+    - OCSP stapling resolves this problem, by making the server obtain the OCSP response and send it to the client
+      together with the certificate
+
+Certificate path validation:
+- Questions:
+  - Is the certificate signed by a CA we trust?
+  - Are we sure the CA didn't withdraw their signature?
+  - Has the certificate been used in line with its intended usage?
+- All certificates in a path, except trust anchor which is being accepted at a face value, need to satisfy these criteria
+
 ### Post-Quantum Cryptography
 
 - Quantum computer would reduce symmetric key strength from 2<sup>n</sup> to 2<sup>n/2</sup>, e.g.

@@ -730,7 +730,7 @@ Certificate path validation:
 
 - PGP stores keys and certificates in key rings
 - Master key in a key ring is always a signing key
-- Simples case is a master key with an encryption subkey
+- Simplest case is a master key with an encryption subkey
 - Message types:
   - PGP PUBLIC KEY BLOCK
   - PGP PRIVATE KEY BLOCK

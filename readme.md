@@ -726,6 +726,18 @@ Certificate path validation:
   - Has the certificate been used in line with its intended usage?
 - All certificates in a path, except trust anchor which is being accepted at a face value, need to satisfy these criteria
 
+### OpenPGP
+
+- PGP stores keys and certificates in key rings
+- Master key in a key ring is always a signing key
+- Simples case is a master key with an encryption subkey
+- Message types:
+  - PGP PUBLIC KEY BLOCK
+  - PGP PRIVATE KEY BLOCK
+  - PGP SIGNATURE
+  - PGP MESSAGE
+  - PGP SIGNED MESSAGE
+
 ### Post-Quantum Cryptography
 
 - Quantum computer would reduce symmetric key strength from 2<sup>n</sup> to 2<sup>n/2</sup>, e.g.

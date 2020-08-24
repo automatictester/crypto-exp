@@ -737,6 +737,11 @@ Certificate path validation:
   - PGP SIGNATURE
   - PGP MESSAGE
   - PGP SIGNED MESSAGE
+- Public key encryption using PGP:
+  - Generate symmetric key
+  - Use this key to encrypt the data
+  - Use the recipient’s public key to encrypt the symmetric key
+  - Optional integrity protection relies on SHA-1
 
 ### Post-Quantum Cryptography
 

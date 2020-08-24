@@ -49,9 +49,9 @@ public class KeyRing {
 
         for (PGPPublicKey pgpPublicKey : pgpPublicKeyList) {
             long keyId = pgpPublicKey.getKeyID();
-            String algorithmId = getAlgorithm(pgpPublicKey.getAlgorithm());
+            String keyAlgorithm = PgpShared.getKeyAlgorithm(pgpPublicKey.getAlgorithm());
             int bitStrength = pgpPublicKey.getBitStrength();
-            log.info("Key ID: {}, algorithm: {}, bit strength: {}", keyId, algorithmId, bitStrength);
+            log.info("Key ID: {}, algorithm: {}, bit strength: {}", keyId, keyAlgorithm, bitStrength);
 
             // for each key in public key ring, check there is a public and secret key with the same key id in secret key ring
             assertThat(pgpSecretKeyRing.getPublicKey(keyId), is(notNullValue()));
@@ -88,15 +88,5 @@ public class KeyRing {
         pgpKeyRingList.add(publicKeyRing);
 
         return pgpKeyRingList;
-    }
-
-    private String getAlgorithm(int algorithm) {
-        if (algorithm == 2) {
-            return "RSA_ENCRYPT";
-        } else if (algorithm == 17) {
-            return "DSA";
-        } else {
-            return "Other";
-        }
     }
 }

@@ -7,6 +7,7 @@ import org.bouncycastle.openpgp.operator.jcajce.JcaPGPKeyPair;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.spec.ECGenParameterSpec;
 import java.security.spec.RSAKeyGenParameterSpec;
 import java.util.Date;
 
@@ -46,5 +47,36 @@ public class PgpShared {
         Date keyPairCreationDate = new Date();
         KeyPair rsaKeyPair = keyPairGenerator.generateKeyPair();
         return new JcaPGPKeyPair(PGPPublicKey.RSA_ENCRYPT, rsaKeyPair, keyPairCreationDate);
+    }
+
+    public static PGPKeyPair generatePgpElGamalEncryptionKeyPair() throws Exception {
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("DH");
+        keyPairGenerator.initialize(2048);
+        Date keyPairCreationDate = new Date();
+        KeyPair rsaKeyPair = keyPairGenerator.generateKeyPair();
+        return new JcaPGPKeyPair(PGPPublicKey.ELGAMAL_ENCRYPT, rsaKeyPair, keyPairCreationDate);
+    }
+
+    public static PGPKeyPair generatePgpEcDhEncryptionKeyPair() throws Exception {
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("EC", new BouncyCastleProvider());
+        keyPairGenerator.initialize(new ECGenParameterSpec("P-256"));
+        Date keyPairCreationDate = new Date();
+        KeyPair rsaKeyPair = keyPairGenerator.generateKeyPair();
+        return new JcaPGPKeyPair(PGPPublicKey.ECDH, rsaKeyPair, keyPairCreationDate);
+    }
+
+    public static String getKeyAlgorithm(int algorithm) {
+        switch (algorithm) {
+            case 2:
+                return "RSA_ENCRYPT";
+            case 16:
+                return "ELGAMAL_ENCRYPT";
+            case 17:
+                return "DSA";
+            case 18:
+                return "ECDH";
+            default:
+                return "Other";
+        }
     }
 }

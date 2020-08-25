@@ -23,7 +23,7 @@ public class SignedMessage {
     }
 
     @Test(dataProvider = "data")
-    public void testPgpSignedMessageCreation(int pgpSignature, char pgpLiteralData) throws Exception {
+    public void testPgpSignedMessageCreation(int pgpSignatureType, char pgpLiteralDataType) throws Exception {
         byte[] originalMessage = "Lorem ipsum dolor sit amet".getBytes();
         log.info("Original message: {}", new String(originalMessage));
 
@@ -31,15 +31,16 @@ public class SignedMessage {
         PGPPublicKey pgpPublicKey = pgpKeyPair.getPublicKey();
 
         // create signed message from input
-        PgpSignedMessage signedMessage = new PgpSignedMessage(originalMessage, pgpKeyPair, pgpSignature, pgpLiteralData);
-        log.info("Signed message: \n{}", new String(signedMessage.asBytes()));
-        log.info("Recovered message: {}", new String(signedMessage.getLiteralData()));
+        PgpSignedMessage signedMessage = new PgpSignedMessage(originalMessage, pgpKeyPair, pgpSignatureType, pgpLiteralDataType);
+        byte[] signedMessageAsBytes = signedMessage.asBytes();
+        log.info("Signed message: \n{}", new String(signedMessageAsBytes));
+        log.info("Recovered message: {}", new String(signedMessage.getMessage()));
         assertTrue(signedMessage.validate(pgpPublicKey));
-        assertEquals(originalMessage, signedMessage.getLiteralData());
+        assertEquals(originalMessage, signedMessage.getMessage());
 
         // create signed message from bytes
-        byte[] signedMessageAsBytes = signedMessage.asBytes();
-        PgpSignedMessageValidator pgpSignedMessageValidator = new PgpSignedMessageValidator(signedMessageAsBytes);
-        assertTrue(pgpSignedMessageValidator.validate(pgpPublicKey));
+        PgpSignedMessage signedMessageFromBytes = new PgpSignedMessage(signedMessageAsBytes);
+        byte[] encodedSignedMessageAsBytes = signedMessageFromBytes.asBytes();
+        assertEquals(encodedSignedMessageAsBytes, signedMessageAsBytes);
     }
 }

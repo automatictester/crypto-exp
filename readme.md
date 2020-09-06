@@ -10,6 +10,11 @@ Ciphers:
 - Good cipher - brute force is the best possible attack
 - Broken cipher - an attack substantially better than brute force exists
 
+Confusion and diffusion:
+- Two properties of a secure cipher
+- Confusion - relationship between plaintext, ciphertext and the key are difficult to spot
+- Diffusion - changing single bit of plaintext changes half of the bits in ciphertext and vice versa
+
 Security goals:
 - IND (indistinguishability) - ciphertext should be indistinguishable from random sequence
 - NM (non-malleability) - ciphertext cannot be transformed into another ciphertext, which decrypts to related plaintext
@@ -106,12 +111,14 @@ Overview:
 - Too small block size = risk of code book attack
 
 Types:
-- Feistel network: early design, e.g. DES
+- Feistel network: early design, e.g. DES, Blowfish, Twofish
 - SP network, modern design, e.g. AES
 
 Secure:
 - AES
 - 3DES
+- Blowfish
+- Twofish
 
 Insecure:
 - DES
@@ -137,6 +144,22 @@ Keying options:
 - K<sub>1</sub> ≠ K<sub>2</sub>, K<sub>1</sub> = K<sub>3</sub> - 2x 56 bits gives 112 bits total key length, 
   however only <= 80 bits of security
 - K<sub>1</sub> = K<sub>2</sub> = K<sub>3</sub> - same as original DES, only for compatibility reasons
+
+### Blowfish
+
+- Key length: 32-448 bits
+- Block size: 64 bits
+- Based on Feistel network
+- Rounds: 16
+
+### Twofish
+
+- Designed as a successor to Blowfish
+- AES finalist
+- Key length: 128, 192 or 256 bits
+- Block size: 128 bits
+- Based on Feistel network
+- Rounds: 16
 
 ### GOST
 

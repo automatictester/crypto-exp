@@ -450,17 +450,23 @@ Authenticated Encryption with Associated Data (AEAD):
       - Almost as fast as pure AES-GCM
       - Cannot process streams - requires entire P to be encrypted to C
 
-### PBKDF
+### Key Stretching
 
-- Takes secret input (password) as well as some public values (salt and iteration count) and returns symmetric key
-- K = PBKDF ( Password, Salt, IterationCount )
+- Key stretching algorithms convert weak keys (usually passwords) into strong keys
+- Key stretching algorithm takes secret input (password) as well as some public values (salt and iteration count) 
+  and returns symmetric key
+- Most popular examples:
+  - PBKDF2
+  - bcrypt
 - The more CPU- and memory-intensive, the better
-- Most common technique for creating PBKDF is PBKDF2
 - Salt:
   - Random bytes
-  - Can be of any length but should be at least as long as the size of output produced by PRF the PBKDF is based on
+  - Can be of any length but should be at least as long as the size of output produced by PRF the algorithm is based on
   - Prevents rainbow table attacks
   
+### Pre-Shared Key
+
+- Secret which was previously shared between the two parties before it needs to be used
 
 ### Public Key Cryptography
 

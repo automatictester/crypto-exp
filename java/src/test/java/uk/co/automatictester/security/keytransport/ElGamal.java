@@ -24,7 +24,7 @@ public class ElGamal {
     }
 
     @Test(dataProvider = "variant")
-    public void testRsa(String variant) throws Exception {
+    public void testElGamal(String variant) throws Exception {
         KeyPair keyPair = generateKeyPair();
         SecretKey symmetricKey = generateKey();
         for (int i = 0; i < 2; i++) {

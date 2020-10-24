@@ -2,12 +2,24 @@
 
 ### Theory
 
+Goals of cryptography:
+- Confidentiality:
+  - Encryption
+- Authentication:
+  - MACs
+  - Public key cryptography
+- Integrity:
+  - Hash functions
+  - MACs
+- Non-repudiation:
+  - Digital signatures
+
 Kerckhoff's principle:
 - Cryptosystem should remain secure even if everything about the system, except the key, is public knowledge
 - Therefore, system may be stolen by the enemy, not causign any problems if key remains secret
 
 Ciphers:
-- Good cipher - brute force is the best possible attack
+- Secure cipher - brute force is the best possible attack
 - Broken cipher - an attack substantially better than brute force exists
 
 Confusion and diffusion:
@@ -98,11 +110,16 @@ Sub-categories:
 ### Block Ciphers
 
 Overview:
+- Encryption function converting block size input into same size output
 - Characterized by block size and key length
+- Common features of current generation of block ciphers:
+  - Block size of 128 bits
+  - Key sizes between 128 and 256 bits
 - Consist of multiple rounds of relatively simple operations
 - Block cipher with 3 rounds:
   - C = E<sub>RK3</sub> ( E<sub>RK2</sub> ( E<sub>RK1</sub> ( P ) ) )
 - Each round uses the same algorithm, but different round key, derived from main key
+- Require padding, except streaming modes and CTS. In theory, any padding scheme that is reversible is acceptable 
 - Derivation of round key is called key schedule
 - Key schedule is required to avoid sliding attacks
 - Consequences of too large block size:
@@ -128,14 +145,17 @@ Insecure:
 
 - Key length: 56 bits, hence insecure from day one
 - Block size: 64 bits
-- Based on Feistel network
+- Type: Feistel network
 - Rounds: 16
+- Each 48 bit round key is formed by selecting 48 bits from 56 bit key
 - Optimized for dedicated hardware, not modern CPUs
 - Introduced also the following modes of operations: ECB, CBC, CFB, OFB
 
 ### 3DES
 
 - Secure by current standards, but slower than AES, hence no reason to use in new designs
+- It inherits certain properties of DES. This includes its block size, which places certain restrictions 
+  on the number of blocks that can be encrypted using single key
 - C = E<sub>K3</sub> ( D<sub>K2</sub> ( E<sub>K1</sub> ( P ) ) )
 
 Keying options:
@@ -145,20 +165,30 @@ Keying options:
   however only <= 80 bits of security
 - K<sub>1</sub> = K<sub>2</sub> = K<sub>3</sub> - same as original DES, only for compatibility reasons
 
+### Serpent
+
+- AES finalist, 2nd place
+- Conservative approach to security with large security margin
+- 1/3 the speed of AES and nearly as fast as DES, which is most likely the reason it didn't win the competition
+- Key length: 128, 192 or 256 bits
+- Block size: 128 bits
+- Type: SP network
+- Rounds: 32
+
 ### Blowfish
 
 - Key length: 32-448 bits
 - Block size: 64 bits
-- Based on Feistel network
+- Type: Feistel network
 - Rounds: 16
 
 ### Twofish
 
 - Designed as a successor to Blowfish
-- AES finalist
+- AES finalist, 3rd place
 - Key length: 128, 192 or 256 bits
 - Block size: 128 bits
-- Based on Feistel network
+- Type: Feistel network
 - Rounds: 16
 
 ### GOST
@@ -174,9 +204,22 @@ Keying options:
 |Block size|64 bits|64 bits|
 |Rounds|16 rounds|32 rounds|
 
+### AES competition
+
+Finalists:
+- Rijndael (winner)
+- Serpent
+- Twofish
+- RC6
+- MARS
+
+Overview:
+- Each cipher had attacks which can successfully handle (only) up to a certain number of its rounds
+- These attacks were known at the time of the competition and some of them might have been improved since then
+
 ### AES
 
-- Previous name: Rijndael
+- Original name: Rijndael
 - Type: SP network
 - Block size: 128 bits, or 16 bytes (matrix of 4x4 bytes)
 - Operates on bytes, not bits
@@ -189,7 +232,7 @@ Keying options:
 - Particular weakness - having a round key, attacker can get other round keys and main key
 
 AES, CBC and padding:
-- There are multiple paddings mechanisms available
+- There are multiple padding mechanisms available:
   - PKCS#5:
     - Currently most popular, sometimes also referred to as PKCS#7 (RFC 5652) - these are synonyms today  
     - Padding length: between 1 byte and 1 block
@@ -216,15 +259,15 @@ CTS:
 - Having said that, from developer point of view, if the library you are using supports it, it's just an option to use
 - Not prone to padding oracle attacks
 
-### Block Cipher Modes
+### Block cipher modes
 
 |Mode|Encryption|Notes|
 |---|---|---|
 |ECB|C = E ( P )|see <sup>2</sup>; not semantically secure|
 |CBC|C = E ( P ⊕ C<sub>i-1</sub> )|see <sup>1</sup> and <sup>2</sup>|
 |CFB|C = E ( C<sub>i-1</sub> ) ⊕ P|see <sup>1</sup>|
-|OFB|C<sub>0</sub> = E ( IV ) ⊕ P<br> C<sub>1</sub> = E ( E ( IV )<sub>0</sub> ) ⊕ P<br>...|see <sup>1</sup>|
-|CTR|C = E ( N + C ) ⊕ P|uses nonce and counter, see <sup>3</sup>|
+|OFB|C<sub>0</sub> = E ( IV ) ⊕ P<br> C<sub>1</sub> = E ( E ( IV ) ) ⊕ P<br>...|see <sup>1</sup>|
+|CTR|C = E ( N + C ) ⊕ P|uses nonce and counter, see <sup>3</sup> and <sup>4<sup>|
 
 <sup>1</sup> - in first iteration IV is used, as there is no C<sub>i-1</sub> yet 
 
@@ -233,6 +276,9 @@ CTS:
 <sup>3</sup> - amount of space to the counter determines how many blocks the cipher can process safely;
   e.g. 8 bit counter only allows for 265 blocks
 
+<sup>4</sup> - nonce and counter can be combined using any invertible operation: concatenation, addition and XOR;
+               e.g. 64 bit nonce (48 bit message number + 16 bit additional nonce data) + 64 bit counter
+
 |Mode|Encryption parallelizable|Decryption parallelizable|Random access|Requires padding|
 |---|---|---|---|---|
 |ECB|yes|yes|yes|yes|
@@ -240,6 +286,43 @@ CTS:
 |CFB|no|yes|yes|no|
 |OFB|no|no|no|no|
 |CTR|yes|yes|yes|no|
+
+Block cipher mode recommendations:
+- Don't use ECB, it is insecure
+- Don't use OFB, as it is not as good as either CBC or CTR
+- Use either CBC or CTR, unless you need AE
+
+### Initialization vector (IV)
+
+Types:
+- Fixed IV:
+  - Shouldn't bt used as it introduces ECB problem for the first block of the message
+- Counter IV:
+  - IV = 0 for first message, IV = 1 for second message - which differ only with LSB in binary representation
+  - Shouldn't be used - if leading plaintext blocks of first two messages also differ only in LSB, ciphertexts 
+    will be identical
+- Random IV:
+  - Only disadvantage is significant message expansion for short messages
+- Nonce-generated IV:
+  - Each message to be encrypted is given a nonce
+  - IV is generated by encrypting the nonce
+  - Encrypt plaintext using the IV
+  - Add enough information to the ciphertext to ensure receiver can reconstruct the nonce - IV doesn't need to be sent
+  - Main benefit is reduced message expansion than with random IV
+
+### Nonce
+
+Overview:
+- Number used once
+- Often a message number, optionally combined with another information (depending on context)
+- Requirements:
+  - Unique
+  - Can't be reused with the same key - block mode doesn't matter, although for some modes this is more disastrous
+    than for the others
+  - Doesn't have to be secret
+  - Can't wrap around as that would destroy uniqness property
+  - As large as block size
+- If nonce generation might be a problem, don't use either CTR or CBC/CFB/OFB with nonce-generated IV
 
 ### Stream ciphers
 
@@ -369,11 +452,17 @@ Similarly to SHA-2, family of 4 algorithms:
 ### Keyed Hashing
 
 - To a degree similar to hash function, but MAC uses a secret key while hash function does not
-- Secret key is shared between party creating and validating MAC 
-- T = MAC ( K, M ), where T stands for tag
+- Secret key is shared between party creating and validating MAC
 - Benefits of MAC:
   - Integrity - without key, data cannot be changed in a way that attached tag remains valid
   - Authenticity - only party with access to the key could have generated valid tag
+- MAC itself doesn't protect against:
+  - Malicious message deletion
+  - Replay attacks
+- Common additional protections against replay attacks include:
+  - Message numbering scheme
+  - Including timestamp in the message
+- T = MAC ( K, M ), where T stands for tag
 - Types of MACs:
   - HMAC - Hash-based Message Authentication Code or Keyed-Hash Message Authentication Code
     - Very popular
@@ -648,7 +737,7 @@ Popular curves:
 - Curve25519 - designed for use with ECDH, fast, more trusted than NSA-designed curves, not part of NIST standard, 
   256 bit length
 
-### Security Strength Comparison
+### Security strength comparison
 
 Comparable security strength (bits), according to common understanding:
 
@@ -660,18 +749,24 @@ Comparable security strength (bits), according to common understanding:
 |192|7680|384|
 |256|15360|512|
 
-Key recommendations:
+CNSA Suite, successor to NSA Suite B, includes the following:
+- AES-256
+- ECDSA 384 bit
+- ECDH 384 bit
+- SHA-384
+- DH 3072 bit
+- RSA 3072 bit
+- All of the above match Top Secret requirements
+- The list is clearly **not** in line with the common understanding
+
+### Key usage recommendations
+
+Opinions might wary:
 - Use keys giving at least 112 bit of security
-- Don't use the key to encrypt more than 2 <sup>block size / 2</sup> blocks
-- CNSA Suite, successor to NSA Suite B, includes the following:
-  - AES-256
-  - ECDSA 384 bit
-  - ECDH 384 bit
-  - SHA-384
-  - DH 3072 bit
-  - RSA 3072 bit
-  - All of the above match Top Secret requirements
-  - The list is clearly **not** in line with the common understanding
+- In general don't use a single key to encrypt more than 2 <sup>block size / 2</sup> blocks
+- In particular, don't use a single key to encrypt more than:
+  - CBC mode - up to 2<sup>32</sup> blocks
+  - CTR mode - up to 2<sup>60</sup> blocks
 
 ### (Perfect) Forward Secrecy
 
@@ -692,7 +787,7 @@ Overview:
 - Cipher suite defines:
   - Protocol: TLS 1.3, TLS 1.2, or no longer secure TLS 1.1, TLS 1.0, SSL 3.0, SSL 2.0
   - Key exchange: TLS 1.3 allows only variants of DHE
-  - Authentication: TLS 1.3 allows only RSA, ECDSA, EdDSA, DSS and PSK
+  - Authentication: TLS 1.3 allows only RSA, ECDSA, EdDSA and PSK
   - Cipher: TLS 1.3 allows only AES-GCM, AES-CCM and ChaCha20-Poly1305
   - Hash: TLS 1.3 allows only SHA256 and SHA384
 
@@ -772,6 +867,54 @@ Certificate path validation:
   - Use the recipient’s public key to encrypt the symmetric key
   - Optional integrity protection relies on SHA-1
 
+### Attacks
+
+- Most common attacks against encryption schemes (from the least powerful):
+  - Ciphertext-only attack:
+    - Only ciphertext is known
+  - Known-plaintext attack:
+    - Plaintext and ciphertext are known
+    - Plaintext may be known only partially
+  - Chosen-plaintext attack
+    - Attacker can chose any number of plaintexts and get corresponding ciphertexts
+    - Offline attack: plaintexts are prepared before getting first ciphertext
+    - Online attach: plaintextx are chosen based on ciphertexts already received
+  - Chosen-ciphertext attack:
+    - Attacker gets plaintext for any chosen ciphertext and ciphertext for any chosen plaintext
+- Other attacks against block ciphers:
+  - Related-key attack - different keys have some relationship that the attacker knows about (e.g. increment by one)
+  - Chosen-key attack - attacker specifies some part of the key and then performs a related-key attack on
+    the rest of the key
+- Attacks against hash functions:
+  - Preimage attack:
+    - Tries to find a message with a specific hash
+    - Strong n-bit hash function should be preimage attack-resistant to the level of 2<sup>n</sup>, i.e. there is
+      no better attack than brute force attack
+    - Still, strong n-bit hash function will be collision attack-resistant to the level of 2<sup>n/2</sup>
+- Birthday paradox:
+  - If you have 23 people in the room, the chance that 2 of them will have the same birthday exceeds 50%
+- Collision attacks:
+  - Attacks that depend on the fact that duplicate values (collisions) appear much faster than you would expect
+  - In general, if element can take N different values, you can expect first collision 
+    after approx. square root of N random elements
+  - Square root of 365 is approx. 19
+  - While talking about n-bit values, this translates into 2<sup>n/2</sup>, e.g. 2<sup>128/2</sup> = 2<sup>64<sup>
+  - Common types:
+    - Birthday attack - attacker waits for the single value to occur twice
+    - Meet-in-the-middle (MITM) attack - attacker computes a total of square root of N of MAC codes or ciphertexts
+      and waits for an overlap between eavesdropped communication and what they computed
+
+### Traffic analysis
+
+Overview:
+- Encryption provides confidentiality, however attacker can still find out:
+  - You are communicating
+  - When you are communicating
+  - How much you are communicating
+  - Whom you are communicating with
+- Analysis of the above is called traffic analysis
+- Preventing traffic analysis is possible, but too bandwidth-expensive for anyone but military
+
 ### Post-Quantum Cryptography
 
 - Quantum computer would reduce symmetric key strength from 2<sup>n</sup> to 2<sup>n/2</sup>, e.g.
@@ -779,7 +922,7 @@ Certificate path validation:
 - Symmetric cryptography can protect itself against quantum computers by doubling symmetric key lengths and hash sizes.
 - Quantum computer would break public key cryptography for good.
 
-### Security Testing Checklist
+### Testing Checklist
 
 - Are keys of correct size?
 - Are keys of correct type (e.g. RSA vs EC)?

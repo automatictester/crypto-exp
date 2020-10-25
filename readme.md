@@ -379,8 +379,20 @@ Example of Linear FSR:
 
 ### Hash Functions
 
-- Hashing is not encryption - reversing is not only not the goal, but should be impossible
+Overview:
+- Hash function is a one-way function that takes an input of arbitrary length and produces fixed-size output
+- Output of a hash function is called hash, message digest or fingerprint
+- Hash function is indistinguishable from a random mapping
+- Common pre-SHA-3 hash functions (MD5, SHA-1, SHA-2) are iterative hash functions. They split the message into 
+  a sequence of fixed-sized blocks (with padding), and then process them sequentially using, each time using output from
+  hashing previous block as an input
+- Hash functions are used for data integrity verification, in HMACs and digital signatures
+- Hash functions are never collision-free, but need to be collision-resistant, i.e. the collisions cannot be easily found
+- Secure hash function has collision-resistance of 2<sup>n/2</sup> and preimage attack resistance of 2<sup>n</sup>
 - Should not be used to store masked passwords, due to ranbow table attacks
+
+Design considerations:
+- See design considerations for MAC
 
 Insecure hash functions:
 - All non-cryptographic hash functions, e.g. CRC
@@ -410,8 +422,14 @@ Davies-Meyer compression function:
 - H<sub>i</sub> = F ( M<sub>i</sub>, H<sub>i-1</sub> ) ⊕ H<sub>i-1</sub>
 - Use IV in first iteration
 
+### MD5
+
+- Hash size: 128 bits
+
 ### SHA-1
 
+- Based on SHA-0 (at that time called just SHA)
+- Hash size: 160 bits
 - Block size: 512 bits
 - Padding: `[1010101|1000...0000111]`, where:
   - `101010101` is actual message
@@ -427,11 +445,17 @@ Overview:
   - SHA-256 (and SHA-224) - 64 rounds
   - SHA-512 (and SHA-384) - 80 rounds
 
-Family of 4 algorithms:
+Family of 6 functions:
 - SHA-224
 - SHA-256
 - SHA-384
 - SHA-512
+- SHA512/224
+- SHA512/256
+
+SHA-384, SHA-512, SHA512/224 and SHA512/256 are faster than SHA-224 and SHA-256 for long messages on 64-bit platforms.
+In particular, SHA512/224 and SHA512/256 are faster than SHA-224 and SHA-256 while maintaining the same hash size and security level.
+SHA512/224 and SHA512/256 are not prone to length extension attacks.
 
 ### SHA-3
 
@@ -449,8 +473,10 @@ Similarly to SHA-2, family of 4 algorithms:
 - SHAKE128
 - SHAKE256
 
-### Keyed Hashing
+### MAC
 
+- MAC is a one-way function that takes in key and message as input and produces fixed-size output called 
+  MAC code or tag
 - To a degree similar to hash function, but MAC uses a secret key while hash function does not
 - Secret key is shared between party creating and validating MAC
 - Benefits of MAC:
@@ -459,18 +485,15 @@ Similarly to SHA-2, family of 4 algorithms:
 - MAC itself doesn't protect against:
   - Malicious message deletion
   - Replay attacks
-- Common additional protections against replay attacks include:
-  - Message numbering scheme
-  - Including timestamp in the message
 - T = MAC ( K, M ), where T stands for tag
 - Types of MACs:
   - HMAC - Hash-based Message Authentication Code or Keyed-Hash Message Authentication Code
     - Very popular
+    - Most agree, that collision attack on HMAC in impractical, as it would require collection of 2<sup>n/2</sup>
+      pairs of messages and corresponding HMAC values.
+      Source: [NIST SP 800-107 Revision 1](https://csrc.nist.gov/publications/detail/sp/800-107/rev-1/final)
+      section 5.3.4.
     - E.g. HMAC-SHA256
-  - CMAC - Cipher-based Message Authentication Code:
-    - Successor to CBC-MAC
-    - Less popular than HMAC
-    - Used e.g. in IKE (Internet Key Exchange) protocol
   - Dedicated MAC constucts, e.g.:
     - Poly1305:
       - Initially designed as Poly1305-AES, later decoupled
@@ -484,7 +507,58 @@ Similarly to SHA-2, family of 4 algorithms:
         finalization rounds
       - SipHash-4-8 is 2x slower but is a good choice for conservative security
 
-### Authenticated Encryption
+**Design considerations**
+
+Q: Would it make sense to use hash function H with secret key K concatenated with message M as follows: H ( K || M ) 
+   instead of MAC?
+
+A: This shouldn't be done using hash functions prone to length extension attacks, i.e. non-truncated versions of SHA-2
+   and earlier functions.
+   This theoretically could be done using hash functions not prone to length extension attacks, i.e. truncated versions
+   of SHA-2 or any version of SHA-3. However, it doesn't make sense for performance reasons.
+   HMAC-SHA256 offers 256 bit strength and should be faster than SHA3-512 offering comparable level of security.
+   Sources: [Wikipedia](https://en.wikipedia.org/wiki/SHA-2#Comparison_of_SHA_functions) and
+            [Jackson Dunstan](https://www.jacksondunstan.com/articles/3206).
+
+Q: Would it make sense to use hash function H with secret key K concatenated with message M as follows: H ( M || K) 
+   instead of MAC?
+
+A: It is not as bad as the previous example. However, such hash function could still be a subject to collision attack,
+   which are not practical for HMACs. Also see previously stated performance reasons.
+
+Q: What key length should be used with HMAC?
+
+A: As a rule of thumb, use key length equal output size of the underlying hash function.
+   Using shorter key would reduce HMAC strength. Using longer key doesn't improve security, as 
+   `HMAC strength = min(key length, preimage resistance of underlying hash function, length of HMAC output)`.
+   When using untruncated HMAC output, which is a typical scenario, 3rd parameter is irrelevant as it is same as 2nd.
+   Sources: [RFC 2104](https://tools.ietf.org/html/rfc2104) sections 2 and 3, and 
+            [NIST SP 800-107 Revision 1](https://csrc.nist.gov/publications/detail/sp/800-107/rev-1/final)
+            sections 4.1, 5.3.1 and 5.3.4.
+
+Q: What are CBC-MAC security limitations?
+
+A: These include:
+- Limited strength equal to half of the underlying block cipher's block size, e.g. only 2<sup>64</sup> for AES. 
+  This is due to collision attacks.
+- Cannot be securely used with the same key to authenticate messages of different length.
+  Source: [Wikipedia](https://en.wikipedia.org/wiki/CBC-MAC). 
+
+Q: How to use MAC to prevent replay attacks?
+
+A: Options include:
+  - Apply MAC to ( additional data || message ), where additional data include:
+    - Message number, so that already processed messages can be rejected
+    - Timestamp, introducing message validity time window as an alternative to message numbering scheme
+    - Direction indicator, if applicable, so that the same message cannot be send in opposite direction
+    - Separators between elements of additional data and message itself, to authenticate what was meant,
+      not what was said
+
+Q: What are GMAC security limitations?
+
+A: See design considerations for authenticated encryption.
+
+### Authenticated encryption
 
 - Approaches:
   - Encrypt-and-MAC (E&M):
@@ -517,8 +591,6 @@ Authenticated Encryption with Associated Data (AEAD):
       - Sensitive to IV reuse
       - GCM mode can work with any block cipher, but vast majority use it only in combination with AES
       - GCM stands for Galois Counter Mode
-      - Produces tags of 128, 120, 112, 104 or 96 bits
-      - Using tags below 128 bits is discouraged, because bit strength reduction is worse than linear
       - Resulting variant of AES-GCM with AAD but blank P is called GMAC
     - AES-CCM:
       - CCM stands for Counter with CBC-MAC
@@ -538,6 +610,13 @@ Authenticated Encryption with Associated Data (AEAD):
       - Less sensitive to IV reuse
       - Almost as fast as pure AES-GCM
       - Cannot process streams - requires entire P to be encrypted to C
+
+**Design considerations**
+
+Q: What are AES-GCM security limitations?
+
+A: AES GCM produces authentication tags of 128, 120, 112, 104 or 96 bits. However, using tags below 128 bits
+   is discouraged, because bit strength reduction is worse than linear. Same applies to subsequent tag truncation.
 
 ### Key Stretching
 
@@ -914,13 +993,6 @@ Overview:
   - Whom you are communicating with
 - Analysis of the above is called traffic analysis
 - Preventing traffic analysis is possible, but too bandwidth-expensive for anyone but military
-
-### Post-Quantum Cryptography
-
-- Quantum computer would reduce symmetric key strength from 2<sup>n</sup> to 2<sup>n/2</sup>, e.g.
-  2<sup>128</sup> to 2<sup>64</sup>.
-- Symmetric cryptography can protect itself against quantum computers by doubling symmetric key lengths and hash sizes.
-- Quantum computer would break public key cryptography for good.
 
 ### Testing Checklist
 

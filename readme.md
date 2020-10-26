@@ -379,105 +379,66 @@ Example of Linear FSR:
 
 ### Hash Functions
 
-Overview:
-- Hash function is a one-way function that takes an input of arbitrary length and produces fixed-size output
-- Output of a hash function is called hash, message digest or fingerprint
-- Hash function is indistinguishable from a random mapping
-- Common pre-SHA-3 hash functions (MD5, SHA-1, SHA-2) are iterative hash functions. They split the message into 
-  a sequence of fixed-sized blocks (with padding), and then process them sequentially using, each time using output from
-  hashing previous block as an input
-- Hash functions are used for data integrity verification, in HMACs and digital signatures
-- Hash functions are never collision-free, but need to be collision-resistant, i.e. the collisions cannot be easily found
-- Secure hash function has collision-resistance of 2<sup>n/2</sup> and preimage attack resistance of 2<sup>n</sup>
-- Should not be used to store masked passwords, due to ranbow table attacks
+Hash function is a one-way function that takes an input of arbitrary length and produces fixed-size output. 
+Output of a hash function is called hash, message digest or fingerprint.
 
-Design considerations:
-- See design considerations for MAC
+Common pre-SHA-3 hash functions (MD5, SHA-1, SHA-2) are iterative hash functions. They split the message into 
+a sequence of fixed-sized blocks, apply padding, and then process them sequentially, using M<sub>i</sub> 
+and H ( M<sub>i-1</sub> ) as an input to for each stage.
 
-Insecure hash functions:
-- All non-cryptographic hash functions, e.g. CRC
-- MD5
-- SHA-1
+While MD5 and SHA-1 are single funtions, SHA-2 is a family of 6 functions: SHA-224, SHA-256, SHA-384, SHA-512,
+SHA512/224 and SHA512/256, with the last two being most recent additions.
 
-Secure hash functions:
-- SHA-2
-- SHA-3
-- BLAKE
+SHA-256 and SHA-512 are base algorithms, from which SHA-224 and SHA-384 are derived with only minor modifications.
 
-Digest size:
-- MD5: 128 bit (32 hex)
-- SHA-1: 160 bit (40 hex)
-- SHA-256 - 256 bit (64 hex)
+SHA-3 was designed as a future alternative if SHA-2 gets broken one day. It is an alternative, not a successor
+to SHA-2 family, because SHA-2 is still considered secure. It has a new structure based on sponge function, 
+purposefully different from SHA-2 to keep it secure against potential future attacks against SHA-2.
 
-Types:
-- Based on Davies-Mayer compression function with Merkle-Damgard construction - majority of hash functions
-- Based on sponge function, e.g. SHA-3
+SHA512/224 and SHA512/256 as well as SHA-3 family are resistant to length extension attacks.
 
-Merkle-Damgard construction:
-- Apply compression function to all blocks
-- Finalise
-- Hash
+Hash functions are designed to be collision resistant to the level of 2<sup>n/2</sup> (except SHA-1),
+preimage resistant to the level of 2<sup>n</sup> and second preimage resistant to the level 
+that depends on particular function but in general is close to or equal 2<sup>n</sup>. 
+See [NIST SP 800-107 Revision 1](https://csrc.nist.gov/publications/detail/sp/800-107/rev-1/final) section 4.2.
 
-Davies-Meyer compression function:
-- H<sub>i</sub> = F ( M<sub>i</sub>, H<sub>i-1</sub> ) ⊕ H<sub>i-1</sub>
-- Use IV in first iteration
+Common use cases of hash functions include: data integrity verification, HMACs, digital signatures.
+Which of the above security characteristics of a hash function is relevant depends on a given use case.
+If an application requires more than one property from the hash function, then the weakest property is the
+security strength of the hash function for that application:
+- Security strength of a hash function  for digital signatures is defined as its collision resistance strength, 
+because digital signatures require both collision resistance and second preimage resistance from the hash function, 
+and the collision resistance strength of the hash function is less than its second preimage resistance strength.
+- Security strength of a hash function for digital signatures is defined as its preimage resistance strength.
 
-### MD5
+See [NIST SP 800-107 Revision 1](https://csrc.nist.gov/publications/detail/sp/800-107/rev-1/final) section 4.1.
 
-- Hash size: 128 bits
+**Design considerations**
 
-### SHA-1
+A. Don't use any non-cryptographic hash functions, e.g. CRC.
 
-- Based on SHA-0 (at that time called just SHA)
-- Hash size: 160 bits
-- Block size: 512 bits
-- Padding: `[1010101|1000...0000111]`, where:
-  - `101010101` is actual message
-  - followed by `1`
-  - followed by number of `0`'s
-  - followed by `111` defining actual length of actual data in this block
+B. Which cryptographic hash function shouldn't be used?
 
-### SHA-2
+See [Wikipedia](https://en.wikipedia.org/wiki/SHA-2#Comparison_of_SHA_functions)
+and [NIST SP 800-107 Revision 1](https://csrc.nist.gov/publications/detail/sp/800-107/rev-1/final) section 4.2
+for comparison of security levels and performance.
 
-Overview:
-- SHA-256 and SHA-512 are base algorithms, from which SHA-224 and SHA-384 are derived with only minor modifications.
-- Rounds: 
-  - SHA-256 (and SHA-224) - 64 rounds
-  - SHA-512 (and SHA-384) - 80 rounds
+- SHA-1 shouldn't be used in digital signatures due to its collision resistance level of 2<sup><80</sup>.
 
-Family of 6 functions:
-- SHA-224
-- SHA-256
-- SHA-384
-- SHA-512
-- SHA512/224
-- SHA512/256
+- SHA-384, SHA-512, SHA512/224 and SHA512/256 are faster than SHA-224 and SHA-256 for long messages on 64-bit platforms.
+In particular, SHA512/224 and SHA512/256 are faster than SHA-224 and SHA-256 for long messages on 64-bit platforms 
+while maintaining the same hash size and collision resistance, and are resistant to length extension attacks.
 
-SHA-384, SHA-512, SHA512/224 and SHA512/256 are faster than SHA-224 and SHA-256 for long messages on 64-bit platforms.
-In particular, SHA512/224 and SHA512/256 are faster than SHA-224 and SHA-256 while maintaining the same hash size and security level.
-SHA512/224 and SHA512/256 are not prone to length extension attacks.
+C. Hash functions shouldn't be used to store masked passwords, due to ranbow table attacks.
 
-### SHA-3
-
-- Designed as a futur ealternative if SHA-2 gets broken one day
-- Alternative, not a successor to SHA-2 family, because SHA-2 hasn't been broken yet
-- New structure, purposefully different from SHA-2 to keep it secure even if SHA-2 gets broken one day
-- Based on Keccak algorithm (sponge function)
-- In contrary to older hash algorithms, not prone to length extension attacks
-
-Similarly to SHA-2, family of 4 algorithms:
-- SHA3-224
-- SHA3-256
-- SHA3-384
-- SHA3-512
-- SHAKE128
-- SHAKE256
+Also see design considerations for MAC.
 
 ### MAC
 
 - MAC is a one-way function that takes in key and message as input and produces fixed-size output called 
   MAC code or tag
-- To a degree similar to hash function, but MAC uses a secret key while hash function does not
+- To a degree similar to hash function, but MAC uses a secret key while hash function does not.
+  Also designed with resistance to MAC forgery and key recovery, not collision or preimage resistance.
 - Secret key is shared between party creating and validating MAC
 - Benefits of MAC:
   - Integrity - without key, data cannot be changed in a way that attached tag remains valid
@@ -509,54 +470,49 @@ Similarly to SHA-2, family of 4 algorithms:
 
 **Design considerations**
 
-Q: Would it make sense to use hash function H with secret key K concatenated with message M as follows: H ( K || M ) 
-   instead of MAC?
+A. Would it make sense to use hash function H with secret key K concatenated with message M as follows: H ( K || M ) 
+instead of MAC?
+   
+This shouldn't be done using hash functions prone to length extension attacks, i.e. non-truncated versions of SHA-2
+and earlier functions. It theoretically could be done using hash functions not prone to length extension attacks,
+i.e. truncated versions of SHA-2 or any version of SHA-3. However, this is not recommended.
 
-A: This shouldn't be done using hash functions prone to length extension attacks, i.e. non-truncated versions of SHA-2
-   and earlier functions.
-   This theoretically could be done using hash functions not prone to length extension attacks, i.e. truncated versions
-   of SHA-2 or any version of SHA-3. However, it doesn't make sense for performance reasons.
-   HMAC-SHA256 offers 256 bit strength and should be faster than SHA3-512 offering comparable level of security.
-   Sources: [Wikipedia](https://en.wikipedia.org/wiki/SHA-2#Comparison_of_SHA_functions) and
-            [Jackson Dunstan](https://www.jacksondunstan.com/articles/3206).
+B. Would it make sense to use hash function H with secret key K concatenated with message M as follows: H ( M || K)
+instead of MAC?
 
-Q: Would it make sense to use hash function H with secret key K concatenated with message M as follows: H ( M || K) 
-   instead of MAC?
+This is not as bad as the previous example because it cannot be a subject to length extension attack.
+However, such use of a hash function could still be a subject to collision attack, which are not practical for MAC.
+This is not recommended.
 
-A: It is not as bad as the previous example. However, such hash function could still be a subject to collision attack,
-   which are not practical for HMACs. Also see previously stated performance reasons.
+C. What key length should be used with HMAC?
 
-Q: What key length should be used with HMAC?
+As a rule of thumb, use key length equal output size of the underlying hash function.
+Using shorter key would reduce HMAC strength. Using longer key doesn't improve security, as 
+`HMAC strength = min(key length, preimage resistance of underlying hash function, output length)`.
+When using untruncated HMAC output, which is a typical scenario, 3rd parameter is irrelevant as it is same as 2nd.
+Sources: [RFC 2104](https://tools.ietf.org/html/rfc2104) sections 2 and 3, and 
+         [NIST SP 800-107 Revision 1](https://csrc.nist.gov/publications/detail/sp/800-107/rev-1/final)
+         sections 4.1, 5.3.1 and 5.3.4.
 
-A: As a rule of thumb, use key length equal output size of the underlying hash function.
-   Using shorter key would reduce HMAC strength. Using longer key doesn't improve security, as 
-   `HMAC strength = min(key length, preimage resistance of underlying hash function, length of HMAC output)`.
-   When using untruncated HMAC output, which is a typical scenario, 3rd parameter is irrelevant as it is same as 2nd.
-   Sources: [RFC 2104](https://tools.ietf.org/html/rfc2104) sections 2 and 3, and 
-            [NIST SP 800-107 Revision 1](https://csrc.nist.gov/publications/detail/sp/800-107/rev-1/final)
-            sections 4.1, 5.3.1 and 5.3.4.
+D. CBC-MAC red flags:
 
-Q: What are CBC-MAC security limitations?
-
-A: These include:
-- Limited strength equal to half of the underlying block cipher's block size, e.g. only 2<sup>64</sup> for AES. 
-  This is due to collision attacks.
 - Cannot be securely used with the same key to authenticate messages of different length.
-  Source: [Wikipedia](https://en.wikipedia.org/wiki/CBC-MAC). 
+  Source: [The Security of Cipher Block Chaining Message Authentication Code](
+  https://cseweb.ucsd.edu/~mihir/papers/cbc.pdf) page 33, [Cryptography Engineering](
+  https://www.amazon.com/Cryptography-Engineering-Principles-Practical-Applications/dp/0470474246) page 92.
+  There are known workarounds.
+- Allowing use of different IVs.
 
-Q: How to use MAC to prevent replay attacks?
+E. How to use MAC to prevent replay attacks?
 
-A: Options include:
-  - Apply MAC to ( additional data || message ), where additional data include:
-    - Message number, so that already processed messages can be rejected
-    - Timestamp, introducing message validity time window as an alternative to message numbering scheme
-    - Direction indicator, if applicable, so that the same message cannot be send in opposite direction
-    - Separators between elements of additional data and message itself, to authenticate what was meant,
-      not what was said
+Apply MAC to ( additional data || message ), where additional data include:
+- Message number, so that already processed messages can be rejected
+- Timestamp, introducing message validity time window as an alternative to message numbering scheme
+- Direction indicator, if applicable, so that the same message cannot be send in opposite direction
+- Separators between elements of additional data and message itself, to authenticate what was meant,
+  not what was said
 
-Q: What are GMAC security limitations?
-
-A: See design considerations for authenticated encryption.
+F. GMAC tag length - see AES-GCM tag length.
 
 ### Authenticated encryption
 
@@ -613,10 +569,10 @@ Authenticated Encryption with Associated Data (AEAD):
 
 **Design considerations**
 
-Q: What are AES-GCM security limitations?
+A. AES-GCM tag length.
 
-A: AES GCM produces authentication tags of 128, 120, 112, 104 or 96 bits. However, using tags below 128 bits
-   is discouraged, because bit strength reduction is worse than linear. Same applies to subsequent tag truncation.
+AES GCM produces authentication tags of 128, 120, 112, 104 or 96 bits. However, using tags below 128 bits
+is discouraged, because bit strength reduction is worse than linear. Same applies to subsequent tag truncation.
 
 ### Key Stretching
 

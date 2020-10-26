@@ -310,6 +310,10 @@ Types:
   - Add enough information to the ciphertext to ensure receiver can reconstruct the nonce - IV doesn't need to be sent
   - Main benefit is reduced message expansion than with random IV
 
+**Design considerations**
+
+A. If the cryptographic library can generate the IV, it is less error prone to use it instead of generating IV yourself.
+
 ### Nonce
 
 Overview:
@@ -323,6 +327,11 @@ Overview:
   - Can't wrap around as that would destroy uniqness property
   - As large as block size
 - If nonce generation might be a problem, don't use either CTR or CBC/CFB/OFB with nonce-generated IV
+
+**Design considerations**
+
+A. If the cryptographic library can generate the nonce, it is less error prone to use it instead of 
+generating nonce yourself.
 
 ### Stream ciphers
 
@@ -379,23 +388,10 @@ Example of Linear FSR:
 
 ### Hash Functions
 
+**Overview**
+
 Hash function is a one-way function that takes an input of arbitrary length and produces fixed-size output. 
 Output of a hash function is called hash, message digest or fingerprint.
-
-Common pre-SHA-3 hash functions (MD5, SHA-1, SHA-2) are iterative hash functions. They split the message into 
-a sequence of fixed-sized blocks, apply padding, and then process them sequentially, using M<sub>i</sub> 
-and H ( M<sub>i-1</sub> ) as an input to for each stage.
-
-While MD5 and SHA-1 are single funtions, SHA-2 is a family of 6 functions: SHA-224, SHA-256, SHA-384, SHA-512,
-SHA512/224 and SHA512/256, with the last two being most recent additions.
-
-SHA-256 and SHA-512 are base algorithms, from which SHA-224 and SHA-384 are derived with only minor modifications.
-
-SHA-3 was designed as a future alternative if SHA-2 gets broken one day. It is an alternative, not a successor
-to SHA-2 family, because SHA-2 is still considered secure. It has a new structure based on sponge function, 
-purposefully different from SHA-2 to keep it secure against potential future attacks against SHA-2.
-
-SHA512/224 and SHA512/256 as well as SHA-3 family are resistant to length extension attacks.
 
 Hash functions are designed to be collision resistant to the level of 2<sup>n/2</sup> (except SHA-1),
 preimage resistant to the level of 2<sup>n</sup> and second preimage resistant to the level 
@@ -406,12 +402,32 @@ Common use cases of hash functions include: data integrity verification, HMACs, 
 Which of the above security characteristics of a hash function is relevant depends on a given use case.
 If an application requires more than one property from the hash function, then the weakest property is the
 security strength of the hash function for that application:
-- Security strength of a hash function  for digital signatures is defined as its collision resistance strength, 
+- Security strength of a hash function for digital signatures is defined as its collision resistance strength, 
 because digital signatures require both collision resistance and second preimage resistance from the hash function, 
 and the collision resistance strength of the hash function is less than its second preimage resistance strength.
 - Security strength of a hash function for digital signatures is defined as its preimage resistance strength.
 
 See [NIST SP 800-107 Revision 1](https://csrc.nist.gov/publications/detail/sp/800-107/rev-1/final) section 4.1.
+
+**MD5, SHA-1 and SHA-2**
+
+Common pre-SHA-3 hash functions (MD5, SHA-1, SHA-2) are iterative hash functions. They split the message into 
+a sequence of fixed-sized blocks, apply padding, and then process them sequentially, using M<sub>i</sub> 
+and H ( M<sub>i-1</sub> ) as an input to for each stage.
+
+While MD5 and SHA-1 are single funtions, SHA-2 is a family of 6 functions: SHA-224, SHA-256, SHA-384, SHA-512,
+SHA512/224 and SHA512/256, with the last two being most recent additions.
+
+SHA-256 and SHA-512 are base algorithms, from which SHA-224 and SHA-384 are derived with only minor modifications.
+
+SHA512/224 and SHA512/256 are resistant to length extension attacks.
+
+**SHA-3**
+
+SHA-3 was designed as a future alternative if SHA-2 gets broken one day. It is an alternative, not a successor
+to SHA-2 family, because SHA-2 is still considered secure. It has a new structure based on sponge function, 
+purposefully different from SHA-2 to keep it secure against potential future attacks against SHA-2.
+SHA-3 family is resistant to length extension attacks.
 
 **Design considerations**
 
@@ -475,14 +491,15 @@ instead of MAC?
    
 This shouldn't be done using hash functions prone to length extension attacks, i.e. non-truncated versions of SHA-2
 and earlier functions. It theoretically could be done using hash functions not prone to length extension attacks,
-i.e. truncated versions of SHA-2 or any version of SHA-3. However, this is not recommended.
+i.e. truncated versions of SHA-2 or any version of SHA-3. This is still not recommended, because hash functions
+were not designed with forgery resistance in mind.
 
 B. Would it make sense to use hash function H with secret key K concatenated with message M as follows: H ( M || K)
 instead of MAC?
 
 This is not as bad as the previous example because it cannot be a subject to length extension attack.
 However, such use of a hash function could still be a subject to collision attack, which are not practical for MAC.
-This is not recommended.
+This is still not recommended, because hash functions were not designed with forgery resistance in mind.
 
 C. What key length should be used with HMAC?
 
@@ -503,12 +520,23 @@ D. CBC-MAC red flags:
   There are known workarounds.
 - Allowing use of different IVs.
 
-E. How to use MAC to prevent replay attacks?
+E. What to do in addition to using MAC to prevent replay attacks?
 
 Apply MAC to ( additional data || message ), where additional data include:
-- Message number, so that already processed messages can be rejected
-- Timestamp, introducing message validity time window as an alternative to message numbering scheme
-- Direction indicator, if applicable, so that the same message cannot be send in opposite direction
+- Message numbering scheme:
+  - Assign each message a unique, increasing number, which clearly indicate if messages were lost in transit
+  - It must be unique, hence it cannot wrap back to zero
+  - Depending on the requirements:
+    - Remember last processed message number of last N numbers
+    - If message numbering indicates previous message was lost or received out of order:
+      - Provide this information to the user
+      - Trigger message re-send request
+      - Reject message with unexpected number
+      - Terminate communication
+  - Additionally, it can be used as IV or nonce
+- Timestamp, introducing message validity time window as an alternative to strict message numbering scheme
+- Direction indicator, if applicable, so that the same message cannot be send in different direction.
+  This is less of an issue if messages sent in different directions use different keys, which should be the case anyway
 - Separators between elements of additional data and message itself, to authenticate what was meant,
   not what was said
 
@@ -516,18 +544,13 @@ F. GMAC tag length - see AES-GCM tag length.
 
 ### Authenticated encryption
 
-- Approaches:
-  - Encrypt-and-MAC (E&M):
-    - Least secure:
-      - MAC validation requires decrypting C
-      - There is a risk that MAC will leak information about P
-  - MAC-then-Encrypt (MtE):
-    - Security in between the other two:
-      - MAC validation requires decrypting C
-      - Hiding MAC inside C prevents it leaking information about P
-  - Encrypt-then-MAC (EtM):
-    - Most secure:
-      - MAC validation doesn't require decrypting C
+**Overview**
+
+|Approach|MAC validation doesn't require decrypting C|Hiding MAC inside C prevents it leaking information about P|Stronger protection for|
+|---|---|---|---|
+|Encrypt-and-MAC (E&M)|no|no|neither|
+|MAC-then-Encrypt (MtE)|no|yes|MAC|
+|Encrypt-then-MAC (EtM)|yes|no|Encryption|
 
 Authenticated Encryption with Associated Data (AEAD):
   - Currently all AE ciphers support AAD
@@ -794,14 +817,12 @@ CNSA Suite, successor to NSA Suite B, includes the following:
 - All of the above match Top Secret requirements
 - The list is clearly **not** in line with the common understanding
 
-### Key usage recommendations
+### Key usage
 
-Opinions might wary:
-- Use keys giving at least 112 bit of security
-- In general don't use a single key to encrypt more than 2 <sup>block size / 2</sup> blocks
-- In particular, don't use a single key to encrypt more than:
-  - CBC mode - up to 2<sup>32</sup> blocks
-  - CTR mode - up to 2<sup>60</sup> blocks
+**Design considerations**
+
+A. Don't use the same key for more than one thing, e.g. for encryption and authentication, or for two-way
+encryption in a two-way communication channel.
 
 ### (Perfect) Forward Secrecy
 

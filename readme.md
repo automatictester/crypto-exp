@@ -91,14 +91,15 @@ PRNG types:
 
 ### Symmetric-key cryptography
 
-Overview:
-- Uses same key for encryption and decryption
-- Key length = level of security, 128 bit key = 128 bit security
-- For a 128 bit key, every single of 2<sup>128</sup> keys is valid
+**Overview**
 
-Sub-categories:
-- Block ciphers
-- Stream ciphers
+128 bit symmetric key generated with each byte being one of 256 values selected at random has a bit strength 
+of 128 bits. In other words, there are 2<sup>128</sup> possible keys of 128 bit length.
+Key of same length but with each byte being one of 16 hexadecimal (or other values) selected at random
+has a bit strength of 64 bits. This is because in order to represent 16 values, only 4 right-most bits suffice, 
+hence 4 * 16 = 64. In other words, there are only 2<sup>64</sup> such keys of 128 bit length.
+
+Pre-shared key (PSK) is a secret which was previously shared between the two parties before it needs to be used.
 
 ### Block Ciphers
 
@@ -119,83 +120,6 @@ Overview:
   - Longer ciphertext, due to longer padding
   - Higher memory utilisation and slower speed, if it doesn't fit into CPU register
 - Too small block size = risk of code book attack
-
-Types:
-- Feistel network: early design, e.g. DES, Blowfish, Twofish
-- SP network, modern design, e.g. AES
-
-Secure:
-- AES
-- 3DES
-- Blowfish
-- Twofish
-
-Insecure:
-- DES
-- GOST
-
-### DES
-
-- Key length: 56 bits, hence insecure from day one
-- Block size: 64 bits
-- Type: Feistel network
-- Rounds: 16
-- Each 48 bit round key is formed by selecting 48 bits from 56 bit key
-- Optimized for dedicated hardware, not modern CPUs
-- Introduced also the following modes of operations: ECB, CBC, CFB, OFB
-
-### 3DES
-
-- Secure by current standards, but slower than AES, hence no reason to use in new designs
-- It inherits certain properties of DES. This includes its block size, which places certain restrictions 
-  on the number of blocks that can be encrypted using single key
-- C = E<sub>K3</sub> ( D<sub>K2</sub> ( E<sub>K1</sub> ( P ) ) )
-
-Keying options:
-- K<sub>1</sub> ≠ K<sub>2</sub> ≠ K<sub>3</sub> - 3x 56 bit key gives 168 bits total key length, however only 112 bits
-  of security due to meet-in-the-middle attacks
-- K<sub>1</sub> ≠ K<sub>2</sub>, K<sub>1</sub> = K<sub>3</sub> - 2x 56 bits gives 112 bits total key length, 
-  however only <= 80 bits of security
-- K<sub>1</sub> = K<sub>2</sub> = K<sub>3</sub> - same as original DES, only for compatibility reasons
-
-### Serpent
-
-- AES finalist, 2nd place
-- Conservative approach to security with large security margin
-- 1/3 the speed of AES and nearly as fast as DES, which is most likely the reason it didn't win the competition
-- Key length: 128, 192 or 256 bits
-- Block size: 128 bits
-- Type: SP network
-- Rounds: 32
-
-### Blowfish
-
-- Key length: 32-448 bits
-- Block size: 64 bits
-- Type: Feistel network
-- Rounds: 16
-
-### Twofish
-
-- Designed as a successor to Blowfish
-- AES finalist, 3rd place
-- Key length: 128, 192 or 256 bits
-- Block size: 128 bits
-- Type: Feistel network
-- Rounds: 16
-
-### GOST
-
-- Original name: Magma
-- Developed in 1970's in Soviet Union. Initially Top Secret, downgraded to Secret in 1990, published in 1994
-- Insecure, with nearly feasible attack at 2<sup>101</sup>
-- Design based on Feistel network and similar to DES
-
-| |DES|GOST|
-|---|---|---|
-|Key length|56 bits|256 bits|
-|Block size|64 bits|64 bits|
-|Rounds|16 rounds|32 rounds|
 
 ### AES competition
 
@@ -280,10 +204,9 @@ CTS:
 |OFB|no|no|no|no|
 |CTR|yes|yes|yes|no|
 
-Block cipher mode recommendations:
-- Don't use ECB, it is insecure
-- Don't use OFB, as it is not as good as either CBC or CTR
-- Use either CBC or CTR, unless you need AE
+**Design considerations**
+
+A. ECB mode is insecure and shoudn't be used.
 
 ### Initialization vector (IV)
 
@@ -329,55 +252,11 @@ generating nonce yourself.
 ### Stream ciphers
 
 Overview:
-- In the past, weaker than block ciphers and cheaper to implement in hardware
 - They are closer to DRBG (Deterministic Random Bit Generators) than PRNG because they need to be deterministic
 - While DRBG takes one input: initial value / seed, stream ciphers take two: initial value and a key
 - Key is usually 128-256 bits, initial value 64-128 bits
 - Initial value is similar to nonce - doesn't have to be secret but has to be unique
 - General form: C = E ( K, N ) ⊕ P
-- Almost all stream ciphers are based on FSR (Feedback Stream Register)
-- Software stream ciphers operate on bytes or 32/64 bit words, which is more efficient on modern CPUs, which can execute
-  arithmetic instructions on words as quickly as on bits
-
-Types:
-- Stateful, e.g. RC4
-- Counter-based, e.g. Salsa20
-
-Types:
-- Hardware:
-  - A5/1 - insecure, used in 2G telecommunications
-  - Grain - secure, eSTREAM portfolio
-- Software:
-  - RC4 - insecure, doesn't use a nonce (!)
-  - Salsa20 - secure, eSTREAM portfolio
-  
-### Feedback Shift Register
-
-Overview:
-- Focussed on hardware implementations
-- Non-linear FSRs are more secure and contain not only XOR, but also AND and OR
-
-Example of Linear FSR:
-- Initial value: 1100
-- Shift all bits one to the left
-- Apply linear function f XORing all bits from previous values to calculate value of right-most bit
-- Iterations:
-  - 1100
-  - 1000
-  - 0001
-  - 0011
-  - 0110
-
-### Salsa20
-
-- Modern, counter-based stream cipher created by D. Bernstein
-- State size: 512 bits (4x4 matrix of 32 bit words), including:
-  - Key size: 256 bits
-  - Nonce: 64 bits
-  - Counter: 64 bits
-- 20 rounds, hence its name
-- Other variants: Salsa20/12, Salsa20/8, where 20 and 8 refer to number of rounds respectively
-- Improved version is called ChaCha, with most popular variant called ChaCha20
 
 ### Hash Functions
 
@@ -603,10 +482,6 @@ is discouraged, because bit strength reduction is worse than linear. Same applie
   - Random bytes
   - Can be of any length but should be at least as long as the size of output produced by PRF the algorithm is based on
   - Prevents rainbow table attacks
-  
-### Pre-Shared Key
-
-- Secret which was previously shared between the two parties before it needs to be used
 
 ### Public Key Cryptography
 
@@ -775,26 +650,11 @@ Inspect RSA public key:
 openssl rsa -pubin -text -noout -in rsa.pub
 ```
 
-### Diffie-Hellman Key Exchange
+### Diffie-Hellman
 
-Overview:
-- Security of DH is based on difficulty of DLP (discreet logarithm problem) - computing secret g<sup>ab</sup> from
-  public g<sup>a</sup> and g<sup>b</sup>
-- Anonymous DH is prone to man-in-the-middle attacks
-- Authenticated DH uses PK cryptography, e.g. RSA-PSS, to avoid man-in-the-middle attacks
+**Design considerations**
 
-Sequence:
-
-|Alice|Public|Bob|
-|:---:|:---:|:---:|
-|a|p, g|b|
-|A = g<sup>a</sup> mod p|<==>|B = g<sup>b</sup> mod p|
-|A, B| |A, B|
-|s = B<sup>a</sup> mod p| |s = A<sup>b</sup> mod p|
-
-Where:
-- p - prime modulus, of certain characteristics
-- g - prime base
+A. DH on its own doesn't handle authentication of the parties and therefore is prone to MITM attacks.
 
 ### Elliptic Curve Cryptography
 
@@ -806,15 +666,6 @@ Benefits:
 - Reduced storage and transmission requirements
 - Key strength is 2<sup>n/2</sup>, i.e. 128 bit security for 256 bit key
 - Alternative for DLP problem-based systems, like DH
-
-Applications:
-- ECDH
-- ECDSA
-
-Popular curves:
-- P-256 - designed by NSA, part of NIST standard, 256 bit length
-- Curve25519 - designed for use with ECDH, fast, more trusted than NSA-designed curves, not part of NIST standard, 
-  256 bit length
 
 ### Security strength comparison
 
@@ -839,13 +690,6 @@ CNSA Suite, successor to NSA Suite B, includes the following:
 - The list is clearly **not** in line with the common understanding
 
 ### Keys
-
-**Overview**
-
-128 bit symmetric key generated with each byte being one of 256 values selected at random has a bit strength 
-of 128 bits. Key of same length but with each byte being one of 16 hexadecimal (or other values) selected at random
-has a bit strength of 64 bits. This is because in order to represent 16 values, only 4 right-most bits suffice, 
-hence 4 * 16 = 64.
 
 **Design considerations**
 

@@ -75,10 +75,12 @@ PRNG:
 
 PRNG types:
 - Cryptographic:
+  - Java `java.security.SecureRandom` class
   - Python `os.urandom()` and `secrets.SystemRandom` class
   - OS-level `/dev/random` and `/dev/urandom`
 - Non-cryptographic:
   - Very often based on Mersenne Twister
+  - Java `java.util.Random` class
   - Python `random`
 
 /dev/random vs /dev/urandom:
@@ -86,15 +88,6 @@ PRNG types:
 - `random` blocks if its estimate of entropy is too low
 - For that reason, implementations based on `random` are prone to DoS
 - `random` is based on entropy estimation, which is generally a challenge
-
-PRNG algorithms:
-- Yarrow:
-  - Based on SHA-1 and 3DES
-  - Used in iOS and macOS
-  - Used by FreeBSD until they migrated to Fortune
-- Fortuna:
-  - Successor to Yarrow
-  - Used by Windows and (currently) FreeBSD
 
 ### Symmetric-key cryptography
 
@@ -750,9 +743,37 @@ Why public exponent e is usually 65537 (hex value 0x10001):
 - With such e, private exponent d is close to n, which then makes sense to speed up private key operations with
   chinese remainder theorem
 
-Inspecting RSA keys with OpenSSL:
-- openssl rsa -in rsa -text -noout
-- openssl rsa -in rsa.pub -text -pubin -noout
+### OpenSSL
+
+Inspect X509 certificate:
+
+```
+openssl x509 -text -noout -in cert.pem
+```
+
+Extract public key from X509 certificate:
+
+```
+openssl x509 -pubkey -noout -in cert.pem
+```
+
+Inspect RSA private key:
+
+```
+openssl rsa -text -noout -in rsa
+```
+
+Extract RSA public key from private key:
+
+```
+openssl rsa -pubout -in rsa -out rsa.pub
+```
+
+Inspect RSA public key:
+
+```
+openssl rsa -pubin -text -noout -in rsa.pub
+```
 
 ### Diffie-Hellman Key Exchange
 
@@ -817,7 +838,14 @@ CNSA Suite, successor to NSA Suite B, includes the following:
 - All of the above match Top Secret requirements
 - The list is clearly **not** in line with the common understanding
 
-### Key usage
+### Keys
+
+**Overview**
+
+128 bit symmetric key generated with each byte being one of 256 values selected at random has a bit strength 
+of 128 bits. Key of same length but with each byte being one of 16 hexadecimal (or other values) selected at random
+has a bit strength of 64 bits. This is because in order to represent 16 values, only 4 right-most bits suffice, 
+hence 4 * 16 = 64.
 
 **Design considerations**
 
@@ -959,17 +987,6 @@ Certificate path validation:
     - Birthday attack - attacker waits for the single value to occur twice
     - Meet-in-the-middle (MITM) attack - attacker computes a total of square root of N of MAC codes or ciphertexts
       and waits for an overlap between eavesdropped communication and what they computed
-
-### Traffic analysis
-
-Overview:
-- Encryption provides confidentiality, however attacker can still find out:
-  - You are communicating
-  - When you are communicating
-  - How much you are communicating
-  - Whom you are communicating with
-- Analysis of the above is called traffic analysis
-- Preventing traffic analysis is possible, but too bandwidth-expensive for anyone but military
 
 ### Testing Checklist
 

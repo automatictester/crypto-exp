@@ -29,3 +29,15 @@ Inspect RSA public key:
 ```
 openssl rsa -pubin -text -noout -in rsa.pub
 ```
+
+Convert certificate from PEM to CER:
+
+```
+openssl x509 -in in.pem -outform der -out out.cer
+```
+
+Download website certificate:
+
+```
+echo "" | openssl s_client -connect google.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > cert.pem
+```

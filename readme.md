@@ -4,6 +4,7 @@ Inspect X509 certificate:
 
 ```
 openssl x509 -text -noout -in cert.pem
+openssl x509 -text -noout -in cert.der -inform der
 ```
 
 Extract public key from X509 certificate:

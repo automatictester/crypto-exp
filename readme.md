@@ -3,38 +3,38 @@
 Inspect X509 certificate:
 
 ```
-openssl x509 -text -noout -in cert.pem
-openssl x509 -text -noout -in cert.der -inform der
+openssl x509 -in cert.pem -text -noout
+openssl x509 -in cert.der -inform der -text -noout
+```
+
+Convert certificate from PEM to DER:
+
+```
+openssl x509 -in cert.pem -outform der -out cert.der
 ```
 
 Extract public key from X509 certificate:
 
 ```
-openssl x509 -pubkey -noout -in cert.pem
-```
-
-Inspect RSA private key:
-
-```
-openssl rsa -text -noout -in rsa
-```
-
-Extract RSA public key from private key:
-
-```
-openssl rsa -pubout -in rsa -out rsa.pub
+openssl x509 -in cert.pem -pubkey -noout
 ```
 
 Inspect RSA public key:
 
 ```
-openssl rsa -pubin -text -noout -in rsa.pub
+openssl rsa -in rsa.pub -pubin -text -noout
 ```
 
-Convert certificate from PEM to CER:
+Inspect RSA private key:
 
 ```
-openssl x509 -in in.pem -outform der -out out.cer
+openssl rsa -in rsa -text -noout
+```
+
+Extract RSA public key from private key:
+
+```
+openssl rsa -in rsa -pubout -out rsa.pub
 ```
 
 Download website certificate:

@@ -1,5 +1,5 @@
+.idea/
+target/
 example.jks
 example.p12
 *.iml
-/.idea/
-/java/target/

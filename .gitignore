@@ -3,3 +3,4 @@ target/
 example.jks
 example.p12
 *.iml
+*.enc

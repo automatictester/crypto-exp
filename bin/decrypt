@@ -1,0 +1,12 @@
+#!/bin/bash
+
+source _shared_validations.sh
+
+if [[ "$1" != *.enc ]]; then
+  echo "File '$1' does not have 'enc' extension"
+  exit 1
+fi
+
+openssl version
+OUTPUT_FILE=$(echo "$1" | sed -e "s/\.enc$//")
+openssl enc -d -aes-128-cbc -pbkdf2 -md sha256 -iter 1000000 -in "$1" -out "${OUTPUT_FILE}"

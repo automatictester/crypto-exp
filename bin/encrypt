@@ -1,0 +1,6 @@
+#!/bin/bash
+
+source _shared_validations.sh
+
+openssl version
+openssl enc -e -aes-128-cbc -pbkdf2 -md sha256 -iter 1000000 -in "$1" -out "$1.enc"

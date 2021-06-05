@@ -1,6 +1,9 @@
 #!/bin/bash
 
-source _shared_validations.sh
+set -e
+
+SCRIPT_DIR=$(dirname "$0")
+source "${SCRIPT_DIR}/shared/validations.sh"
 
 if [[ "$1" != *.enc ]]; then
   echo "File '$1' does not have 'enc' extension"

@@ -5,9 +5,8 @@ import org.testng.annotations.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class ROT13 {
+public class Atbash {
 
-    private static final int SHIFT = 13;
     private static final int LOWER_BOUND = 65;
     private static final int UPPER_BOUND = 90;
 
@@ -15,7 +14,7 @@ public class ROT13 {
     public void testEncrypt() {
         String plaintext = "ABCDEFXYZ";
         String ciphertext = encrypt(plaintext);
-        String expected = "NOPQRSKLM";
+        String expected = "ZYXWVUCBA";
         assertThat(expected, equalTo(ciphertext));
 
         String plaintextAgain = encrypt(ciphertext);
@@ -35,7 +34,8 @@ public class ROT13 {
 
     private char encryptChar(char c) {
         int zeroBasedValue = c - LOWER_BOUND;
-        int newZeroBasedValue = (zeroBasedValue + SHIFT) % 26;
+        int range = UPPER_BOUND - LOWER_BOUND;
+        int newZeroBasedValue = range - zeroBasedValue;
         return (char) (newZeroBasedValue + LOWER_BOUND);
     }
 

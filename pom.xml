@@ -9,6 +9,7 @@
    <version>1.0-SNAPSHOT</version>
 
    <properties>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <slf4j.version>1.7.30</slf4j.version>
       <bouncycastle.version>1.66</bouncycastle.version>
    </properties>

@@ -42,3 +42,17 @@ Download website certificate:
 ```
 echo "" | openssl s_client -connect google.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > cert.pem
 ```
+
+### Java
+
+Debug certificate revocation checks:
+
+```
+-Djava.security.debug=certpath
+```
+
+Debug TLS handshake:
+
+```
+-Djavax.net.debug=ssl
+```
